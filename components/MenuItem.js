@@ -25,13 +25,13 @@ const LeftSide = styled.div`
 const Name = styled.div`
   font-size: 16px;
   font-weight: 700;
-  color: #191F28;
+  color: #1a1510;
   margin-bottom: 4px;
 `;
 
 const Price = styled.div`
   font-size: 15px;
-  color: #8B95A1;
+  color: #8c8278;
   margin-bottom: 8px;
 `;
 
@@ -55,7 +55,7 @@ const ImagePlaceholder = styled.div`
   width: 80px;
   height: 80px;
   border-radius: 8px;
-  background: #F0F0F0;
+  background: #ede8e0;
   flex-shrink: 0;
 `;
 
@@ -69,13 +69,13 @@ const ProductImage = styled.img`
 `;
 
 const badgeStyles = {
-  '추천': { bg: '#E8F0FE', color: '#3182F6' },
+  '추천': { bg: '#f5edd8', color: '#c3904a' },
   '사장님 추천': { bg: '#FFF8E1', color: '#F59E0B' },
   '인기': { bg: '#FFF3E0', color: '#FF9500' },
   '시그니처': { bg: '#F3E8FF', color: '#8B5CF6' },
   'BEST': { bg: '#FFEBEE', color: '#FF3B30' },
   'NEW': { bg: '#E8F5E9', color: '#4CAF50' },
-  '품절': { bg: '#F0F0F0', color: '#8B95A1' },
+  '품절': { bg: '#ede8e0', color: '#8c8278' },
 };
 
 export default function MenuItem({ product, onAdd }) {
@@ -99,7 +99,7 @@ export default function MenuItem({ product, onAdd }) {
         {badges.length > 0 && (
           <BadgeRow>
             {badges.map((badge) => {
-              const style = badgeStyles[badge] || { bg: '#F0F0F0', color: '#666' };
+              const style = badgeStyles[badge] || { bg: '#ede8e0', color: '#666' };
               return (
                 <Badge key={badge} $bg={style.bg} $color={style.color}>
                   {badge}

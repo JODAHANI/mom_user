@@ -24,8 +24,8 @@ const Tab = styled.button`
   border-radius: 20px;
   white-space: nowrap;
   transition: all 0.15s ease;
-  background: ${(props) => (props.$active ? '#3182F6' : '#F5F6F8')};
-  color: ${(props) => (props.$active ? '#fff' : '#8B95A1')};
+  background: ${(props) => (props.$active ? '#c3904a' : '#f5f1eb')};
+  color: ${(props) => (props.$active ? '#fff' : '#8c8278')};
   font-weight: ${(props) => (props.$active ? '600' : '400')};
 `;
 

@@ -24,43 +24,47 @@ const Container = styled.div`
   display: flex;
   flex-direction: column;
   gap: 8px;
-  max-width: 400px;
-  width: calc(100% - 32px);
+  width: fit-content;
   transition: bottom 0.2s ease;
 `;
 
 const ToastItem = styled.div`
-  padding: 14px 18px;
-  border-radius: 12px;
-  font-size: 14px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-size: 15px;
   font-weight: 500;
-  line-height: 1.4;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  line-height: 1.3;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   animation: ${(p) => (p.$removing ? fadeOut : slideUp)} 0.25s ease forwards;
   background: ${(p) =>
-    p.$type === 'success' ? '#1B1D1F' :
+    p.$type === 'success' ? '#2a2a2a' :
     p.$type === 'error' ? '#FF3B30' :
+    p.$type === 'delete' ? '#D4726A' :
     p.$type === 'info' ? '#FF9500' :
-    p.$type === 'order' ? '#3182F6' :
-    p.$type === 'staff' ? '#1B1D1F' :
+    p.$type === 'order' ? '#6DBE8B' :
+    p.$type === 'staff' ? '#1a1510' :
     p.$type === 'status' ? '#4CAF50' :
-    '#1B1D1F'};
+    '#1a1510'};
   color: white;
   cursor: pointer;
   display: flex;
   align-items: center;
   gap: 10px;
+  white-space: pre-line;
 `;
 
 const Icon = styled.span`
   font-size: 18px;
   flex-shrink: 0;
+  font-weight: ${(p) => (p.$text ? '700' : '400')};
+  font-size: ${(p) => (p.$text ? '20px' : '18px')};
 `;
 
 const typeIcons = {
   success: '🛒',
   error: '⚠️',
-  info: '↩️',
+  delete: '❌',
+  info: '🔔',
   order: '✅',
   staff: '🔔',
   status: '📋',
@@ -95,7 +99,7 @@ export function ToastProvider({ children }) {
         <Container $hasBar={cartCount > 0}>
           {toasts.map((t) => (
             <ToastItem key={t.id} $type={t.type} $removing={t.removing} onClick={() => removeToast(t.id)}>
-              <Icon>{typeIcons[t.type] || '✓'}</Icon>
+              <Icon $text={typeof typeIcons[t.type] === 'string' && typeIcons[t.type].length === 1}>{typeIcons[t.type] || '✓'}</Icon>
               {t.message}
             </ToastItem>
           ))}

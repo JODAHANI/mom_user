@@ -32,7 +32,7 @@ const Sheet = styled.div`
 const Handle = styled.div`
   width: 40px;
   height: 4px;
-  background: #D1D5DB;
+  background: #d1cbc3;
   border-radius: 2px;
   margin: 12px auto;
   flex-shrink: 0;
@@ -41,7 +41,7 @@ const Handle = styled.div`
 const Title = styled.h2`
   font-size: 18px;
   font-weight: 700;
-  color: #191F28;
+  color: #1a1510;
   padding: 4px 20px 16px;
   flex-shrink: 0;
 `;
@@ -54,13 +54,13 @@ const ScrollArea = styled.div`
 const EmptyState = styled.div`
   padding: 60px 20px;
   text-align: center;
-  color: #8B95A1;
+  color: #8c8278;
   font-size: 14px;
 `;
 
 const OrderItem = styled.div`
   padding: 16px 20px;
-  border-top: 1px solid #F2F4F6;
+  border-top: 1px solid #f0ebe3;
 `;
 
 const OrderTop = styled.div`
@@ -72,7 +72,7 @@ const OrderTop = styled.div`
 
 const OrderTime = styled.span`
   font-size: 13px;
-  color: #8B95A1;
+  color: #8c8278;
 `;
 
 const StatusBadge = styled.span`
@@ -83,23 +83,23 @@ const StatusBadge = styled.span`
   background: ${(p) => {
     switch (p.$status) {
       case 'pending': return '#FFF3E0';
-      case 'accepted': return '#E8F0FE';
-      case 'preparing': return '#E8F0FE';
+      case 'accepted': return '#f5edd8';
+      case 'preparing': return '#f5edd8';
       case 'ready': return '#E8F5E9';
-      case 'served': return '#F5F6F8';
+      case 'served': return '#f5f1eb';
       case 'cancelled': return '#FFF0F0';
-      default: return '#F5F6F8';
+      default: return '#f5f1eb';
     }
   }};
   color: ${(p) => {
     switch (p.$status) {
       case 'pending': return '#E65100';
-      case 'accepted': return '#1565C0';
-      case 'preparing': return '#1565C0';
+      case 'accepted': return '#9e7535';
+      case 'preparing': return '#9e7535';
       case 'ready': return '#2E7D32';
-      case 'served': return '#8B95A1';
+      case 'served': return '#8c8278';
       case 'cancelled': return '#FF3B30';
-      default: return '#8B95A1';
+      default: return '#8c8278';
     }
   }};
 `;
@@ -107,12 +107,12 @@ const StatusBadge = styled.span`
 const OrderTotal = styled.span`
   font-size: 15px;
   font-weight: 700;
-  color: #191F28;
+  color: #1a1510;
 `;
 
 const ItemRow = styled.div`
   font-size: 14px;
-  color: #4E5968;
+  color: #5a5046;
   line-height: 1.6;
 `;
 
@@ -126,7 +126,7 @@ const CloseButton = styled.button`
   padding: 16px;
   border: none;
   border-radius: 12px;
-  background: #1B1D1F;
+  background: #1a1510;
   color: #fff;
   font-size: 16px;
   font-weight: 600;

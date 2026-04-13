@@ -7,9 +7,10 @@ const Bar = styled.div`
   right: 0;
   max-width: 480px;
   margin: 0 auto;
-  background: #3182F6;
+  background: #c3904a;
   color: #fff;
-  padding: 16px 20px;
+  padding: 18px 20px;
+  padding-bottom: calc(18px + env(safe-area-inset-bottom, 8px));
   border-radius: 16px 16px 0 0;
   display: ${(props) => (props.$visible ? 'flex' : 'none')};
   justify-content: space-between;
@@ -18,16 +19,16 @@ const Bar = styled.div`
   z-index: 100;
 
   &:active {
-    background: #1B6CE5;
+    background: #a87a3a;
   }
 `;
 
 const Count = styled.span`
-  font-size: 15px;
+  font-size: 16px;
 `;
 
 const Total = styled.span`
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
 `;
 

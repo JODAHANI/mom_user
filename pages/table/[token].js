@@ -19,7 +19,7 @@ import { useOrderWebSocket } from '../../hooks/useWebSocket';
 
 const PageWrapper = styled.div`
   min-height: 100vh;
-  background: #F5F6F8;
+  background: #f5f1eb;
 `;
 
 const LoadingWrapper = styled.div`
@@ -28,7 +28,7 @@ const LoadingWrapper = styled.div`
   justify-content: center;
   min-height: 100vh;
   font-size: 14px;
-  color: #8B95A1;
+  color: #8c8278;
 `;
 
 const ErrorWrapper = styled.div`
@@ -38,7 +38,7 @@ const ErrorWrapper = styled.div`
   justify-content: center;
   min-height: 100vh;
   font-size: 14px;
-  color: #8B95A1;
+  color: #8c8278;
   padding: 20px;
   text-align: center;
 `;
@@ -78,7 +78,7 @@ export default function TablePage() {
     staffCallMutation.mutate(
       { tableId: table._id, tableNumber: table.number, floor: table.floor },
       {
-        onSuccess: () => showToast('직원을 호출했습니다. 잠시만 기다려주세요.', 'staff'),
+        onSuccess: () => showToast('직원호출이\n완료되었습니다.', 'staff'),
         onError: () => showToast('호출에 실패했습니다. 다시 시도해주세요.', 'error'),
       }
     );
@@ -86,7 +86,7 @@ export default function TablePage() {
 
   const handleAddToCart = (product) => {
     addToCart(product);
-    showToast(`${product.name}을(를) 장바구니에 담았습니다`, 'success');
+    showToast(`${product.name} 추가`, 'success');
   };
 
   const handleCartClick = () => {

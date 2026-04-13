@@ -13,8 +13,8 @@ const GlobalStyle = createGlobalStyle`
 
   html, body {
     font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', sans-serif;
-    background: #F5F6F8;
-    color: #191F28;
+    background: #f5f1eb;
+    color: #1a1510;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

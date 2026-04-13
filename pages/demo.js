@@ -34,7 +34,7 @@ const PRODUCTS = [
 
 const PageWrapper = styled.div`
   min-height: 100vh;
-  background: #F5F6F8;
+  background: #f5f1eb;
 `;
 
 export default function DemoPage() {

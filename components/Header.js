@@ -20,11 +20,11 @@ const StaffCallButton = styled.button`
   border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
-  color: #4E5968;
+  color: #5a5046;
   background: none;
 
   &:active {
-    background: #F5F6F8;
+    background: #f5f1eb;
   }
 `;
 
@@ -51,7 +51,7 @@ const IconButton = styled.button`
   background: none;
 
   &:active {
-    background: #F5F6F8;
+    background: #f5f1eb;
   }
 `;
 
@@ -63,7 +63,7 @@ const Badge = styled.span`
   height: 20px;
   padding: 0 5px;
   border-radius: 10px;
-  background: #3182F6;
+  background: #c3904a;
   color: #fff;
   font-size: 11px;
   font-weight: 700;
@@ -74,15 +74,15 @@ const Badge = styled.span`
 
 const OrderIcon = () => (
   <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-    <text x="12" y="18" textAnchor="middle" fontSize="20" fontWeight="700" fill="#8B95A1" fontFamily="sans-serif">&#x20A9;</text>
+    <text x="12" y="18" textAnchor="middle" fontSize="20" fontWeight="700" fill="#8c8278" fontFamily="sans-serif">&#x20A9;</text>
   </svg>
 );
 
 const CartIcon = () => (
   <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-    <path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" stroke="#8B95A1" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M3 6H21" stroke="#8B95A1" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-    <path d="M16 10C16 11.0609 15.5786 12.0783 14.8284 12.8284C14.0783 13.5786 13.0609 14 12 14C10.9391 14 9.92172 13.5786 9.17157 12.8284C8.42143 12.0783 8 11.0609 8 10" stroke="#8B95A1" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M6 2L3 6V20C3 20.5304 3.21071 21.0391 3.58579 21.4142C3.96086 21.7893 4.46957 22 5 22H19C19.5304 22 20.0391 21.7893 20.4142 21.4142C20.7893 21.0391 21 20.5304 21 20V6L18 2H6Z" stroke="#8c8278" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M3 6H21" stroke="#8c8278" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M16 10C16 11.0609 15.5786 12.0783 14.8284 12.8284C14.0783 13.5786 13.0609 14 12 14C10.9391 14 9.92172 13.5786 9.17157 12.8284C8.42143 12.0783 8 11.0609 8 10" stroke="#8c8278" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
   </svg>
 );
 
@@ -94,12 +94,12 @@ const InfoSection = styled.div`
 const StoreName = styled.h1`
   font-size: 22px;
   font-weight: 800;
-  color: #191F28;
+  color: #1a1510;
 `;
 
 const SubLine = styled.p`
   font-size: 13px;
-  color: #8B95A1;
+  color: #8c8278;
   margin-top: 4px;
 `;
 
@@ -124,7 +124,7 @@ export default function Header({ table, cartCount, onStaffCall, onOrderHistory, 
       <InfoSection>
         <StoreName>장유해신탕</StoreName>
         {table && (
-          <SubLine>{table.floor}층 {table.number}번 테이블 · 3명이 같이 주문하고 있어요</SubLine>
+          <SubLine>{table.floor}층 {table.number}번 테이블</SubLine>
         )}
       </InfoSection>
     </HeaderWrapper>

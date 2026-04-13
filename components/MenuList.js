@@ -12,7 +12,7 @@ const EmptyState = styled.div`
   justify-content: center;
   padding: 60px 0;
   font-size: 14px;
-  color: #8B95A1;
+  color: #8c8278;
 `;
 
 export default function MenuList({ products, onAddToCart }) {

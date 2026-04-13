@@ -15,13 +15,13 @@ import {
 
 const PageWrapper = styled.div`
   min-height: 100vh;
-  background: #F5F6F8;
+  background: #f5f1eb;
 `;
 
 const TopBar = styled.header`
   background: #fff;
   padding: 16px;
-  border-bottom: 1px solid #E5E8EB;
+  border-bottom: 1px solid #e5ded4;
   display: flex;
   align-items: center;
   position: relative;
@@ -30,7 +30,7 @@ const TopBar = styled.header`
 const BackButton = styled.button`
   font-size: 18px;
   padding: 4px 8px;
-  color: #191F28;
+  color: #1a1510;
 `;
 
 const TopTitle = styled.h1`
@@ -62,13 +62,13 @@ const ItemInfo = styled.div`
 const ItemName = styled.div`
   font-size: 16px;
   font-weight: 600;
-  color: #191F28;
+  color: #1a1510;
   margin-bottom: 4px;
 `;
 
 const ItemPrice = styled.div`
   font-size: 14px;
-  color: #8B95A1;
+  color: #8c8278;
 `;
 
 const Controls = styled.div`
@@ -81,16 +81,16 @@ const QtyButton = styled.button`
   width: 32px;
   height: 32px;
   border-radius: 8px;
-  border: 1px solid #E5E8EB;
+  border: 1px solid #e5ded4;
   background: #fff;
   font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #191F28;
+  color: #1a1510;
 
   &:active {
-    background: #F5F6F8;
+    background: #f5f1eb;
   }
 `;
 
@@ -102,10 +102,11 @@ const Quantity = styled.span`
 `;
 
 const RemoveButton = styled.button`
-  font-size: 12px;
-  color: #8B95A1;
-  padding: 4px 8px;
+  font-size: 24px;
+  color: #8c8278;
+  padding: 4px 18px;
   margin-left: 8px;
+  line-height: 1;
 
   &:active {
     color: #FF3B30;
@@ -121,7 +122,7 @@ const BottomSection = styled.div`
   margin: 0 auto;
   background: #fff;
   padding: 16px 20px;
-  border-top: 1px solid #E5E8EB;
+  border-top: 1px solid #e5ded4;
 `;
 
 const TotalRow = styled.div`
@@ -134,30 +135,30 @@ const TotalRow = styled.div`
 const TotalLabel = styled.span`
   font-size: 16px;
   font-weight: 600;
-  color: #191F28;
+  color: #1a1510;
 `;
 
 const TotalPrice = styled.span`
   font-size: 20px;
   font-weight: 700;
-  color: #191F28;
+  color: #1a1510;
 `;
 
 const OrderButton = styled.button`
   width: 100%;
   padding: 16px;
   border-radius: 12px;
-  background: #3182F6;
+  background: #c3904a;
   color: #fff;
   font-size: 16px;
   font-weight: 700;
 
   &:active {
-    background: #1B6CE5;
+    background: #a87a3a;
   }
 
   &:disabled {
-    background: #D1D6DB;
+    background: #d1cbc3;
     cursor: not-allowed;
   }
 `;
@@ -169,7 +170,7 @@ const EmptyState = styled.div`
   justify-content: center;
   padding: 100px 20px;
   font-size: 15px;
-  color: #8B95A1;
+  color: #8c8278;
 `;
 
 export default function CartPage() {
@@ -253,7 +254,7 @@ export default function CartPage() {
                   >
                     +
                   </QtyButton>
-                  <RemoveButton onClick={() => { removeFromCart(item.productId); showToast(`${item.name}이(가) 삭제되었습니다`, 'info'); }}>삭제</RemoveButton>
+                  <RemoveButton onClick={() => { removeFromCart(item.productId); showToast(`${item.name} 삭제`, 'delete'); }}>&times;</RemoveButton>
                 </Controls>
               </CartItem>
             ))}

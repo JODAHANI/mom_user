@@ -14,7 +14,7 @@ const IconWrapper = styled.div`
   width: 80px;
   height: 80px;
   border-radius: 20px;
-  background: #3182F6;
+  background: #c3904a;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -31,13 +31,13 @@ const PhoneSvg = () => (
 const Title = styled.h1`
   font-size: 20px;
   font-weight: 700;
-  color: #191F28;
+  color: #1a1510;
   margin-bottom: 8px;
 `;
 
 const Subtitle = styled.p`
   font-size: 14px;
-  color: #8B95A1;
+  color: #8c8278;
   line-height: 1.5;
   max-width: 260px;
 `;
