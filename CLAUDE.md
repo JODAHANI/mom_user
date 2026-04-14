@@ -35,7 +35,9 @@ client/
 │   ├── index.js           # QR 스캔 안내 랜딩
 │   ├── demo.js            # 서버 없이 테스트용 (하드코딩 데이터)
 │   └── table/
-│       ├── [token].js     # 메뉴 페이지 (카테고리, 상품, 직원호출)
+│       ├── index.js       # 세션 토큰 게이트 → [token] 리다이렉트 (없으면 TableGuide)
+│       ├── cart.js        # 세션 토큰 게이트 → [token]/cart 리다이렉트
+│       ├── [token].js     # 메뉴 페이지 (카테고리, 상품, 직원호출, 세션 만료 처리)
 │       └── [token]/
 │           └── cart.js    # 장바구니 + 주문 제출
 ├── components/
@@ -46,12 +48,16 @@ client/
 │   ├── MenuList.js        # 메뉴 그리드 컨테이너
 │   ├── PromoBanner.js     # 공지사항 배너 (펼침/접기)
 │   ├── OrderHistory.js    # 주문내역 바텀시트 (10초 갱신, 스와이프 닫기)
+│   ├── LoadingScreen.js   # 로딩 화면 (점 3개 바운스, message props)
+│   ├── TableGuide.js      # QR 스캔 안내 화면 (토큰 없이 진입 시)
+│   ├── ExpiredScreen.js   # 결제 완료/세션 만료 화면 (이전 주문내역 링크)
 │   └── Toast.js           # 토스트 알림 Context Provider
 ├── hooks/
 │   ├── useCategories.js   # GET /categories
 │   ├── useProducts.js     # GET /products (카테고리 필터)
 │   ├── useOrder.js        # POST /orders (useMutation)
 │   ├── useStaffCall.js    # POST /staff-calls (useMutation)
+│   ├── useSession.js      # 테이블별 세션 시작 시각 저장, lastClearedAt 비교로 만료 판정
 │   └── useWebSocket.js    # ORDER_STATUS 이벤트 수신
 ├── lib/
 │   ├── api.js             # axios 인스턴스 (동적 baseURL)
@@ -72,9 +78,11 @@ client/
 - 클라이언트 상태: Jotai atoms (장바구니 - cartItemsAtom, 파생 atoms)
 - UI 상태: useState (모달, 선택된 카테고리 등)
 
-### 인증
+### 인증 / 세션
 - 인증 없음. 테이블 토큰(URL 파라미터)으로 테이블 식별
 - `GET /api/tables/token/[token]`으로 테이블 검증
+- `sessionStorage.currentToken`에 현재 테이블 토큰 저장 → `/table`, `/table/cart` 새로고침 시 자동 복원
+- `useSession`: 테이블별 세션 시작 시각을 `sessionStorage`에 저장. 테이블의 `lastClearedAt`이 더 늦으면 `expired=true` → `ExpiredScreen` 노출
 
 ### 스타일링
 - styled-components 전용 (CSS 파일 없음)

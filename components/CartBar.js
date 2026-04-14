@@ -1,42 +1,60 @@
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
+
+const bounce = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+`;
 
 const Bar = styled.div`
   position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-width: 480px;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: 16px;
+  right: 16px;
+  max-width: 448px;
   margin: 0 auto;
   background: #c3904a;
   color: #fff;
-  padding: 18px 20px;
-  padding-bottom: calc(18px + env(safe-area-inset-bottom, 8px));
-  border-radius: 16px 16px 0 0;
+  padding: 16px 20px;
+  border-radius: 16px;
   display: ${(props) => (props.$visible ? 'flex' : 'none')};
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
+  gap: 10px;
   cursor: pointer;
   z-index: 100;
+  box-shadow: 0 6px 20px rgba(195, 144, 74, 0.4);
+  animation: ${bounce} 1.6s ease-in-out infinite;
 
   &:active {
     background: #a87a3a;
+    animation-play-state: paused;
   }
 `;
 
-const Count = styled.span`
-  font-size: 16px;
+const CountBubble = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 12px;
+  background: #fff;
+  color: #c3904a;
+  font-size: 13px;
+  font-weight: 800;
 `;
 
-const Total = styled.span`
-  font-size: 17px;
+const Label = styled.span`
+  font-size: 16px;
   font-weight: 700;
 `;
 
 export default function CartBar({ count, total, onClick }) {
   return (
     <Bar $visible={count > 0} onClick={onClick}>
-      <Count>총 {count}개</Count>
-      <Total>{total?.toLocaleString()}원 주문하기</Total>
+      <CountBubble>{count}</CountBubble>
+      <Label>{total?.toLocaleString()}원 주문하기</Label>
     </Bar>
   );
 }

@@ -51,6 +51,8 @@ const ToastItem = styled.div`
   align-items: center;
   gap: 10px;
   white-space: pre-line;
+  width: max-content;
+  max-width: calc(100vw - 32px);
 `;
 
 const Icon = styled.span`

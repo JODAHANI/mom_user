@@ -39,6 +39,11 @@ export function useOrderWebSocket(tableId) {
           queryClient.invalidateQueries({ queryKey: ['table-orders'] });
         }
       }
+      if (data.type === 'TABLE_CLEARED') {
+        if (data.data?.tableId === String(tableId)) {
+          queryClient.invalidateQueries({ queryKey: ['table'] });
+        }
+      }
     });
 
     return () => {

@@ -116,6 +116,29 @@ const ItemRow = styled.div`
   line-height: 1.6;
 `;
 
+const TotalSummary = styled.div`
+  flex-shrink: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 0 20px 12px;
+  padding: 14px 18px;
+  background: #f5f1eb;
+  border-radius: 12px;
+`;
+
+const TotalLabel = styled.span`
+  font-size: 14px;
+  font-weight: 600;
+  color: #5a5046;
+`;
+
+const TotalAmount = styled.span`
+  font-size: 18px;
+  font-weight: 800;
+  color: #1a1510;
+`;
+
 const BottomBar = styled.div`
   flex-shrink: 0;
   padding: 12px 20px 24px;
@@ -151,17 +174,21 @@ function formatTime(iso) {
   return `${period} ${hour}:${m}`;
 }
 
-export default function OrderHistory({ open, onClose, tableId, lastClearedAt }) {
+export default function OrderHistory({ open, onClose, tableId, sessionStartedAt }) {
   const { data: orders = [] } = useQuery({
-    queryKey: ['table-orders', tableId, lastClearedAt],
+    queryKey: ['table-orders', tableId, sessionStartedAt],
     queryFn: async () => {
-      const params = lastClearedAt ? { after: lastClearedAt } : {};
+      const params = sessionStartedAt ? { after: sessionStartedAt } : {};
       const { data } = await api.get(`/orders/table/${tableId}`, { params });
       return data;
     },
     enabled: !!tableId && open,
     refetchInterval: open ? 10000 : false,
   });
+
+  const grandTotal = orders
+    .filter((o) => o.status !== 'cancelled')
+    .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
 
   const touchStartY = useRef(null);
 
@@ -184,6 +211,12 @@ export default function OrderHistory({ open, onClose, tableId, lastClearedAt }) 
       <Sheet $open={open} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         <Handle />
         <Title>주문내역</Title>
+        {orders.length > 0 && (
+          <TotalSummary>
+            <TotalLabel>총 주문 금액</TotalLabel>
+            <TotalAmount>{grandTotal.toLocaleString()}원</TotalAmount>
+          </TotalSummary>
+        )}
         <ScrollArea>
           {orders.length === 0 ? (
             <EmptyState>아직 주문내역이 없습니다</EmptyState>
@@ -209,9 +242,9 @@ export default function OrderHistory({ open, onClose, tableId, lastClearedAt }) 
             ))
           )}
         </ScrollArea>
-        <BottomBar>
+        {/* <BottomBar>
           <CloseButton onClick={onClose}>닫기</CloseButton>
-        </BottomBar>
+        </BottomBar> */}
       </Sheet>
     </>
   );

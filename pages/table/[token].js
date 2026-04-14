@@ -1,13 +1,19 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
 import styled from 'styled-components';
 import api from '../../lib/api';
 import { useCategories } from '../../hooks/useCategories';
 import { useProducts } from '../../hooks/useProducts';
 import { useStaffCall } from '../../hooks/useStaffCall';
-import { addToCartAtom, cartCountAtom, cartTotalAtom } from '../../store/cartAtom';
+import { useSession } from '../../hooks/useSession';
+import {
+  addToCartAtom,
+  cartCountAtom,
+  cartTotalAtom,
+  clearCartAtom,
+} from '../../store/cartAtom';
 import { useToast } from '../../components/Toast';
 import Header from '../../components/Header';
 import PromoBanner from '../../components/PromoBanner';
@@ -15,20 +21,13 @@ import CategoryTabs from '../../components/CategoryTabs';
 import MenuList from '../../components/MenuList';
 import CartBar from '../../components/CartBar';
 import OrderHistory from '../../components/OrderHistory';
+import ExpiredScreen from '../../components/ExpiredScreen';
+import LoadingScreen from '../../components/LoadingScreen';
 import { useOrderWebSocket } from '../../hooks/useWebSocket';
 
 const PageWrapper = styled.div`
   min-height: 100vh;
   background: #f5f1eb;
-`;
-
-const LoadingWrapper = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  font-size: 14px;
-  color: #8c8278;
 `;
 
 const ErrorWrapper = styled.div`
@@ -50,9 +49,11 @@ export default function TablePage() {
   const [, addToCart] = useAtom(addToCartAtom);
   const [cartCount] = useAtom(cartCountAtom);
   const [cartTotal] = useAtom(cartTotalAtom);
+  const [, clearCart] = useAtom(clearCartAtom);
   const [orderHistoryOpen, setOrderHistoryOpen] = useState(false);
   const staffCallMutation = useStaffCall();
   const showToast = useToast();
+  const queryClient = useQueryClient();
 
   const {
     data: tableData,
@@ -69,17 +70,43 @@ export default function TablePage() {
 
   const table = tableData?.data || tableData;
   useOrderWebSocket(table?._id);
+  const { sessionStartedAt, expired } = useSession(token, table?.lastClearedAt);
   const categories = categoriesData?.data || categoriesData || [];
   const allProducts = productsData?.data || productsData || [];
   const products = allProducts.filter((p) => p.showOnTable !== false);
 
+  useEffect(() => {
+    if (expired) {
+      clearCart();
+    }
+  }, [expired, clearCart]);
+
+  useEffect(() => {
+    if (!token || typeof window === 'undefined') return;
+    window.sessionStorage.setItem('currentToken', token);
+    if (router.asPath !== '/table') {
+      router.replace(
+        { pathname: '/table/[token]', query: { token } },
+        '/table',
+        { shallow: true }
+      );
+    }
+  }, [token, router]);
+
   const handleStaffCall = () => {
     if (!table?._id) return;
     staffCallMutation.mutate(
-      { tableId: table._id, tableNumber: table.number, floor: table.floor },
+      { tableId: table._id, tableNumber: table.number, floor: table.floor, sessionStartedAt },
       {
         onSuccess: () => showToast('직원호출이\n완료되었습니다.', 'staff'),
-        onError: () => showToast('호출에 실패했습니다. 다시 시도해주세요.', 'error'),
+        onError: (err) => {
+          if (err?.response?.status === 409) {
+            showToast('테이블이 정리되었습니다.', 'error');
+            queryClient.invalidateQueries({ queryKey: ['table'] });
+          } else {
+            showToast('호출에 실패했습니다. 다시 시도해주세요.', 'error');
+          }
+        },
       }
     );
   };
@@ -90,13 +117,16 @@ export default function TablePage() {
   };
 
   const handleCartClick = () => {
-    router.push(`/table/${token}/cart`);
+    router.push(
+      { pathname: '/table/[token]/cart', query: { token } },
+      '/table/cart'
+    );
   };
 
-  if (!token) return null;
+  if (!token) return <LoadingScreen message="맛있는 메뉴를 가져오고 있어요" />;
 
   if (tableLoading) {
-    return <LoadingWrapper>메뉴를 불러오고 있습니다...</LoadingWrapper>;
+    return <LoadingScreen message="맛있는 메뉴를 가져오고 있어요" />;
   }
 
   if (tableError) {
@@ -105,6 +135,20 @@ export default function TablePage() {
         <p>테이블 정보를 불러올 수 없습니다.</p>
         <p style={{ marginTop: 8 }}>QR코드를 다시 스캔해주세요.</p>
       </ErrorWrapper>
+    );
+  }
+
+  if (expired) {
+    return (
+      <>
+        <ExpiredScreen onOrderHistory={() => setOrderHistoryOpen(true)} />
+        <OrderHistory
+          open={orderHistoryOpen}
+          onClose={() => setOrderHistoryOpen(false)}
+          tableId={table?._id}
+          sessionStartedAt={sessionStartedAt}
+        />
+      </>
     );
   }
 
@@ -119,7 +163,12 @@ export default function TablePage() {
       />
       <MenuList products={products} onAddToCart={handleAddToCart} />
       <CartBar count={cartCount} total={cartTotal} onClick={handleCartClick} />
-      <OrderHistory open={orderHistoryOpen} onClose={() => setOrderHistoryOpen(false)} tableId={table?._id} lastClearedAt={table?.lastClearedAt} />
+      <OrderHistory
+        open={orderHistoryOpen}
+        onClose={() => setOrderHistoryOpen(false)}
+        tableId={table?._id}
+        sessionStartedAt={sessionStartedAt}
+      />
     </PageWrapper>
   );
 }

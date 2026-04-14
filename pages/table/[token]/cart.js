@@ -1,12 +1,17 @@
+import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAtom } from 'jotai';
-import { useQuery } from '@tanstack/react-query';
-import styled from 'styled-components';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import styled, { keyframes } from 'styled-components';
 import api from '../../../lib/api';
 import { useOrder } from '../../../hooks/useOrder';
+import { useSession } from '../../../hooks/useSession';
+import { useOrderWebSocket } from '../../../hooks/useWebSocket';
 import { useToast } from '../../../components/Toast';
+import ExpiredScreen from '../../../components/ExpiredScreen';
 import {
   cartItemsAtom,
+  cartCountAtom,
   cartTotalAtom,
   updateQuantityAtom,
   removeFromCartAtom,
@@ -113,54 +118,62 @@ const RemoveButton = styled.button`
   }
 `;
 
-const BottomSection = styled.div`
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  max-width: 480px;
-  margin: 0 auto;
-  background: #fff;
-  padding: 16px 20px;
-  border-top: 1px solid #e5ded4;
-`;
-
-const TotalRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-`;
-
-const TotalLabel = styled.span`
-  font-size: 16px;
-  font-weight: 600;
-  color: #1a1510;
-`;
-
-const TotalPrice = styled.span`
-  font-size: 20px;
-  font-weight: 700;
-  color: #1a1510;
+const bounce = keyframes`
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
 `;
 
 const OrderButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  border-radius: 12px;
+  position: fixed;
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px));
+  left: 16px;
+  right: 16px;
+  max-width: 448px;
+  margin: 0 auto;
   background: #c3904a;
   color: #fff;
-  font-size: 16px;
-  font-weight: 700;
+  padding: 16px 20px;
+  border: none;
+  border-radius: 16px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  z-index: 100;
+  box-shadow: 0 6px 20px rgba(195, 144, 74, 0.4);
+  animation: ${bounce} 1.6s ease-in-out infinite;
 
   &:active {
     background: #a87a3a;
+    animation-play-state: paused;
   }
 
   &:disabled {
     background: #d1cbc3;
     cursor: not-allowed;
+    box-shadow: none;
+    animation: none;
   }
+`;
+
+const CountBubble = styled.span`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  padding: 0 7px;
+  border-radius: 12px;
+  background: #fff;
+  color: #c3904a;
+  font-size: 13px;
+  font-weight: 800;
+`;
+
+const Label = styled.span`
+  font-size: 16px;
+  font-weight: 700;
 `;
 
 const EmptyState = styled.div`
@@ -177,12 +190,14 @@ export default function CartPage() {
   const router = useRouter();
   const { token } = router.query;
   const [cartItems] = useAtom(cartItemsAtom);
+  const [cartCount] = useAtom(cartCountAtom);
   const [cartTotal] = useAtom(cartTotalAtom);
   const [, updateQuantity] = useAtom(updateQuantityAtom);
   const [, removeFromCart] = useAtom(removeFromCartAtom);
   const [, clearCart] = useAtom(clearCartAtom);
   const orderMutation = useOrder();
   const showToast = useToast();
+  const queryClient = useQueryClient();
 
   const { data: tableData } = useQuery({
     queryKey: ['table', token],
@@ -191,6 +206,26 @@ export default function CartPage() {
   });
 
   const table = tableData?.data || tableData;
+  useOrderWebSocket(table?._id);
+  const { sessionStartedAt, expired } = useSession(token, table?.lastClearedAt);
+
+  useEffect(() => {
+    if (expired) {
+      clearCart();
+    }
+  }, [expired, clearCart]);
+
+  useEffect(() => {
+    if (!token || typeof window === 'undefined') return;
+    window.sessionStorage.setItem('currentToken', token);
+    if (router.asPath !== '/table/cart') {
+      router.replace(
+        { pathname: '/table/[token]/cart', query: { token } },
+        '/table/cart',
+        { shallow: true }
+      );
+    }
+  }, [token, router]);
 
   const handleOrder = () => {
     if (!table?._id || cartItems.length === 0) return;
@@ -199,6 +234,7 @@ export default function CartPage() {
       tableId: table._id,
       tableNumber: table.number,
       floor: table.floor,
+      sessionStartedAt,
       items: cartItems.map((item) => ({
         product: item.productId,
         name: item.name,
@@ -214,11 +250,21 @@ export default function CartPage() {
         clearCart();
         router.back();
       },
-      onError: () => {
-        showToast('주문에 실패했습니다. 다시 시도해주세요.', 'error');
+      onError: (err) => {
+        if (err?.response?.status === 409) {
+          showToast('테이블이 정리되었습니다.', 'error');
+          clearCart();
+          queryClient.invalidateQueries({ queryKey: ['table'] });
+        } else {
+          showToast('주문에 실패했습니다. 다시 시도해주세요.', 'error');
+        }
       },
     });
   };
+
+  if (expired) {
+    return <ExpiredScreen />;
+  }
 
   return (
     <PageWrapper>
@@ -260,15 +306,12 @@ export default function CartPage() {
             ))}
           </CartList>
 
-          <BottomSection>
-            <TotalRow>
-              <TotalLabel>총 결제금액</TotalLabel>
-              <TotalPrice>{cartTotal.toLocaleString()}원</TotalPrice>
-            </TotalRow>
-            <OrderButton onClick={handleOrder} disabled={orderMutation.isPending}>
-              {orderMutation.isPending ? '주문 중...' : '주문하기'}
-            </OrderButton>
-          </BottomSection>
+          <OrderButton onClick={handleOrder} disabled={orderMutation.isPending}>
+            <CountBubble>{cartCount}</CountBubble>
+            <Label>
+              {orderMutation.isPending ? '주문 중...' : `${cartTotal.toLocaleString()}원 주문하기`}
+            </Label>
+          </OrderButton>
         </>
       )}
     </PageWrapper>
