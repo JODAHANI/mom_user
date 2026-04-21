@@ -8,7 +8,6 @@ import PromoBanner from '../components/PromoBanner';
 import CategoryTabs from '../components/CategoryTabs';
 import MenuList from '../components/MenuList';
 import CartBar from '../components/CartBar';
-import OrderHistory from '../components/OrderHistory';
 
 // 더미 데이터 (seed.js 기준)
 const CATEGORIES = [
@@ -43,7 +42,6 @@ export default function DemoPage() {
   const [cartCount] = useAtom(cartCountAtom);
   const [cartTotal] = useAtom(cartTotalAtom);
   const [, placeOrder] = useAtom(placeOrderAtom);
-  const [orderHistoryOpen, setOrderHistoryOpen] = useState(false);
   const showToast = useToast();
 
   const table = { _id: 'demo', number: 1, floor: 1 };
@@ -69,7 +67,7 @@ export default function DemoPage() {
 
   return (
     <PageWrapper>
-      <Header table={table} cartCount={cartCount} onStaffCall={handleStaffCall} onOrderHistory={() => setOrderHistoryOpen(true)} onCart={handleCartClick} />
+      <Header table={table} cartCount={cartCount} onStaffCall={handleStaffCall} onOrderHistory={() => showToast('데모에서는 주문내역을 볼 수 없어요', 'info')} onCart={handleCartClick} />
       <PromoBanner />
       <CategoryTabs
         categories={CATEGORIES}
@@ -78,7 +76,6 @@ export default function DemoPage() {
       />
       <MenuList products={products} onAddToCart={handleAddToCart} />
       <CartBar count={cartCount} total={cartTotal} onClick={handleCartClick} />
-      <OrderHistory open={orderHistoryOpen} onClose={() => setOrderHistoryOpen(false)} />
     </PageWrapper>
   );
 }

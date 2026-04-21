@@ -7,9 +7,11 @@ import api from '../../lib/api';
 import { useCategories } from '../../hooks/useCategories';
 import { useProducts } from '../../hooks/useProducts';
 import { useStaffCall } from '../../hooks/useStaffCall';
+import { useOrder } from '../../hooks/useOrder';
 import { useSession } from '../../hooks/useSession';
 import {
   addToCartAtom,
+  cartItemsAtom,
   cartCountAtom,
   cartTotalAtom,
   clearCartAtom,
@@ -20,7 +22,6 @@ import PromoBanner from '../../components/PromoBanner';
 import CategoryTabs from '../../components/CategoryTabs';
 import MenuList from '../../components/MenuList';
 import CartBar from '../../components/CartBar';
-import OrderHistory from '../../components/OrderHistory';
 import ExpiredScreen from '../../components/ExpiredScreen';
 import LoadingScreen from '../../components/LoadingScreen';
 import { useOrderWebSocket } from '../../hooks/useWebSocket';
@@ -47,11 +48,12 @@ export default function TablePage() {
   const { token } = router.query;
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [, addToCart] = useAtom(addToCartAtom);
+  const [cartItems] = useAtom(cartItemsAtom);
   const [cartCount] = useAtom(cartCountAtom);
   const [cartTotal] = useAtom(cartTotalAtom);
   const [, clearCart] = useAtom(clearCartAtom);
-  const [orderHistoryOpen, setOrderHistoryOpen] = useState(false);
   const staffCallMutation = useStaffCall();
+  const orderMutation = useOrder();
   const showToast = useToast();
   const queryClient = useQueryClient();
 
@@ -123,6 +125,48 @@ export default function TablePage() {
     );
   };
 
+  const handleOrderHistoryClick = () => {
+    router.push(
+      { pathname: '/table/[token]/orders', query: { token } },
+      '/table/orders'
+    );
+  };
+
+  const handleOrderSubmit = () => {
+    if (!table?._id || cartItems.length === 0 || orderMutation.isPending) return;
+
+    const orderData = {
+      tableId: table._id,
+      tableNumber: table.number,
+      floor: table.floor,
+      sessionStartedAt,
+      items: cartItems.map((item) => ({
+        product: item.productId,
+        name: item.name,
+        price: item.price,
+        quantity: item.quantity,
+      })),
+      totalPrice: cartTotal,
+    };
+
+    orderMutation.mutate(orderData, {
+      onSuccess: () => {
+        showToast('주문이 완료되었습니다!', 'order');
+        clearCart();
+        queryClient.invalidateQueries({ queryKey: ['table-orders', table._id] });
+      },
+      onError: (err) => {
+        if (err?.response?.status === 409) {
+          showToast('테이블이 정리되었습니다.', 'error');
+          clearCart();
+          queryClient.invalidateQueries({ queryKey: ['table'] });
+        } else {
+          showToast('주문에 실패했습니다. 다시 시도해주세요.', 'error');
+        }
+      },
+    });
+  };
+
   if (!token) return <LoadingScreen message="맛있는 메뉴를 가져오고 있어요" />;
 
   if (tableLoading) {
@@ -139,22 +183,12 @@ export default function TablePage() {
   }
 
   if (expired) {
-    return (
-      <>
-        <ExpiredScreen onOrderHistory={() => setOrderHistoryOpen(true)} />
-        <OrderHistory
-          open={orderHistoryOpen}
-          onClose={() => setOrderHistoryOpen(false)}
-          tableId={table?._id}
-          sessionStartedAt={sessionStartedAt}
-        />
-      </>
-    );
+    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} />;
   }
 
   return (
     <PageWrapper>
-      <Header table={table} cartCount={cartCount} onStaffCall={handleStaffCall} onOrderHistory={() => setOrderHistoryOpen(true)} onCart={handleCartClick} />
+      <Header table={table} cartCount={cartCount} onStaffCall={handleStaffCall} onOrderHistory={handleOrderHistoryClick} onCart={handleCartClick} />
       <PromoBanner />
       <CategoryTabs
         categories={categories}
@@ -162,13 +196,7 @@ export default function TablePage() {
         onSelect={setSelectedCategory}
       />
       <MenuList products={products} onAddToCart={handleAddToCart} />
-      <CartBar count={cartCount} total={cartTotal} onClick={handleCartClick} />
-      <OrderHistory
-        open={orderHistoryOpen}
-        onClose={() => setOrderHistoryOpen(false)}
-        tableId={table?._id}
-        sessionStartedAt={sessionStartedAt}
-      />
+      <CartBar count={cartCount} total={cartTotal} onClick={handleOrderSubmit} pending={orderMutation.isPending} />
     </PageWrapper>
   );
 }

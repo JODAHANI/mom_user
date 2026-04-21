@@ -33,13 +33,13 @@ const TopBar = styled.header`
 `;
 
 const BackButton = styled.button`
-  font-size: 18px;
+  font-size: 22px;
   padding: 4px 8px;
   color: #1a1510;
 `;
 
 const TopTitle = styled.h1`
-  font-size: 18px;
+  font-size: 22px;
   font-weight: 700;
   flex: 1;
   text-align: center;
@@ -53,69 +53,100 @@ const CartList = styled.div`
 const CartItem = styled.div`
   background: #fff;
   border-radius: 12px;
-  padding: 16px;
+  padding: 18px;
   margin-bottom: 12px;
   display: flex;
+  flex-direction: column;
+  gap: 14px;
+`;
+
+const TopRow = styled.div`
+  display: flex;
   justify-content: space-between;
-  align-items: center;
+  align-items: flex-start;
+  gap: 12px;
 `;
 
 const ItemInfo = styled.div`
   flex: 1;
+  min-width: 0;
 `;
 
 const ItemName = styled.div`
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 600;
   color: #1a1510;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 `;
 
 const ItemPrice = styled.div`
-  font-size: 14px;
-  color: #8c8278;
+  font-size: 17px;
+  color: #5a5046;
+  font-weight: 600;
 `;
 
-const Controls = styled.div`
+const RemoveButton = styled.button`
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #d1cbc3;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 700;
   display: flex;
   align-items: center;
-  gap: 12px;
+  justify-content: center;
+  line-height: 1;
+
+  &:active {
+    background: #8c8278;
+  }
+`;
+
+const BottomRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+`;
+
+const QtyGroup = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: #f5f1eb;
+  border-radius: 999px;
+  padding: 4px;
 `;
 
 const QtyButton = styled.button`
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid #e5ded4;
-  background: #fff;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: transparent;
+  color: #8c8278;
   font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #1a1510;
+  line-height: 1;
 
   &:active {
-    background: #f5f1eb;
+    color: #c3904a;
   }
 `;
 
 const Quantity = styled.span`
+  min-width: 36px;
+  height: 30px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: #fff;
   font-size: 16px;
   font-weight: 600;
-  min-width: 20px;
-  text-align: center;
-`;
-
-const RemoveButton = styled.button`
-  font-size: 24px;
-  color: #8c8278;
-  padding: 4px 18px;
-  margin-left: 8px;
-  line-height: 1;
-
-  &:active {
-    color: #FF3B30;
-  }
+  color: #1a1510;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const bounce = keyframes`
@@ -161,18 +192,18 @@ const CountBubble = styled.span`
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 24px;
-  height: 24px;
-  padding: 0 7px;
-  border-radius: 12px;
+  min-width: 28px;
+  height: 28px;
+  padding: 0 8px;
+  border-radius: 14px;
   background: #fff;
   color: #c3904a;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 800;
 `;
 
 const Label = styled.span`
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
 `;
 
@@ -182,7 +213,7 @@ const EmptyState = styled.div`
   align-items: center;
   justify-content: center;
   padding: 100px 20px;
-  font-size: 15px;
+  font-size: 17px;
   color: #8c8278;
 `;
 
@@ -248,6 +279,7 @@ export default function CartPage() {
       onSuccess: () => {
         showToast('주문이 완료되었습니다!', 'order');
         clearCart();
+        queryClient.invalidateQueries({ queryKey: ['table-orders', table._id] });
         router.back();
       },
       onError: (err) => {
@@ -263,7 +295,7 @@ export default function CartPage() {
   };
 
   if (expired) {
-    return <ExpiredScreen />;
+    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} />;
   }
 
   return (
@@ -280,28 +312,32 @@ export default function CartPage() {
           <CartList>
             {cartItems.map((item) => (
               <CartItem key={item.productId}>
-                <ItemInfo>
-                  <ItemName>{item.name}</ItemName>
-                  <ItemPrice>{(item.price * item.quantity).toLocaleString()}원</ItemPrice>
-                </ItemInfo>
-                <Controls>
-                  <QtyButton
-                    onClick={() =>
-                      updateQuantity({ productId: item.productId, quantity: item.quantity - 1 })
-                    }
-                  >
-                    -
-                  </QtyButton>
-                  <Quantity>{item.quantity}</Quantity>
-                  <QtyButton
-                    onClick={() =>
-                      updateQuantity({ productId: item.productId, quantity: item.quantity + 1 })
-                    }
-                  >
-                    +
-                  </QtyButton>
+                <TopRow>
+                  <ItemInfo>
+                    <ItemName>{item.name}</ItemName>
+                    <ItemPrice>{(item.price * item.quantity).toLocaleString()}원</ItemPrice>
+                  </ItemInfo>
                   <RemoveButton onClick={() => { removeFromCart(item.productId); showToast(`${item.name} 삭제`, 'delete'); }}>&times;</RemoveButton>
-                </Controls>
+                </TopRow>
+                <BottomRow>
+                  <QtyGroup>
+                    <QtyButton
+                      onClick={() =>
+                        updateQuantity({ productId: item.productId, quantity: item.quantity - 1 })
+                      }
+                    >
+                      −
+                    </QtyButton>
+                    <Quantity>{item.quantity}</Quantity>
+                    <QtyButton
+                      onClick={() =>
+                        updateQuantity({ productId: item.productId, quantity: item.quantity + 1 })
+                      }
+                    >
+                      +
+                    </QtyButton>
+                  </QtyGroup>
+                </BottomRow>
               </CartItem>
             ))}
           </CartList>

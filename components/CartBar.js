@@ -29,6 +29,15 @@ const Bar = styled.div`
     background: #a87a3a;
     animation-play-state: paused;
   }
+
+  ${(props) =>
+    props.$pending &&
+    `
+    background: #d1cbc3;
+    box-shadow: none;
+    animation: none;
+    pointer-events: none;
+  `}
 `;
 
 const CountBubble = styled.span`
@@ -46,15 +55,15 @@ const CountBubble = styled.span`
 `;
 
 const Label = styled.span`
-  font-size: 16px;
+  font-size: 18px;
   font-weight: 700;
 `;
 
-export default function CartBar({ count, total, onClick }) {
+export default function CartBar({ count, total, onClick, pending }) {
   return (
-    <Bar $visible={count > 0} onClick={onClick}>
+    <Bar $visible={count > 0} $pending={pending} onClick={onClick}>
       <CountBubble>{count}</CountBubble>
-      <Label>{total?.toLocaleString()}원 주문하기</Label>
+      <Label>{pending ? '주문 중...' : `${total?.toLocaleString()}원 주문하기`}</Label>
     </Bar>
   );
 }

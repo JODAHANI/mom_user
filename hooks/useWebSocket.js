@@ -4,10 +4,10 @@ import wsManager from '../lib/websocket';
 import { useToast } from '../components/Toast';
 
 const statusLabel = {
-  pending: '대기중',
-  preparing: '준비중',
-  ready: '준비완료',
-  served: '서빙완료',
+  pending: '조리대기',
+  preparing: '조리시작',
+  ready: '조리완료',
+  served: '전달완료',
   cancelled: '취소됨',
 };
 
@@ -28,6 +28,12 @@ export function useOrderWebSocket(tableId) {
     wsManager.connect();
 
     const remove = wsManager.addListener((data) => {
+      if (data.type === 'NEW_ORDER') {
+        const order = data.data;
+        if (String(order?.tableId) === String(tableId)) {
+          queryClient.invalidateQueries({ queryKey: ['table-orders'] });
+        }
+      }
       if (data.type === 'ORDER_STATUS') {
         const order = data.data;
         if (order.tableId === tableId) {

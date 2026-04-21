@@ -1,5 +1,4 @@
 import { useRef, useCallback } from 'react';
-import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
 import api from '../lib/api';
@@ -21,12 +20,16 @@ const Sheet = styled.div`
   margin: 0 auto;
   background: #fff;
   border-radius: 20px 20px 0 0;
-  height: 90vh;
+  height: 99vh;
+  height: 99dvh;
+  max-height: calc(100dvh - 4px);
   display: flex;
   flex-direction: column;
   z-index: 201;
   transform: ${(p) => (p.$open ? 'translateY(0)' : 'translateY(100%)')};
   transition: transform 0.3s ease;
+  overflow: hidden;
+  text-align: left;
 `;
 
 const Handle = styled.div`
@@ -34,33 +37,59 @@ const Handle = styled.div`
   height: 4px;
   background: #d1cbc3;
   border-radius: 2px;
-  margin: 12px auto;
+  margin: 12px auto 8px;
   flex-shrink: 0;
 `;
 
-const Title = styled.h2`
-  font-size: 18px;
-  font-weight: 700;
-  color: #1a1510;
-  padding: 4px 20px 16px;
+const HeaderArea = styled.div`
   flex-shrink: 0;
+  padding: 4px 20px 18px;
 `;
+
+const Title = styled.h2`
+  font-size: 26px;
+  font-weight: 800;
+  color: #1a1510;
+  letter-spacing: -0.7px;
+  margin: 0 0 14px;
+  line-height: 1.15;
+`;
+
+const TotalSummary = styled.div`
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1510;
+  letter-spacing: -0.5px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+`;
+
+const TotalDivider = styled.span`
+  margin: 0 9px;
+  color: #d1cbc3;
+  font-weight: 400;
+`;
+
 
 const ScrollArea = styled.div`
   flex: 1;
   overflow-y: auto;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
+  background: #f5f1eb;
 `;
 
 const EmptyState = styled.div`
   padding: 60px 20px;
   text-align: center;
   color: #8c8278;
-  font-size: 14px;
+  font-size: 15px;
 `;
 
 const OrderItem = styled.div`
-  padding: 16px 20px;
-  border-top: 1px solid #f0ebe3;
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
 `;
 
 const OrderTop = styled.div`
@@ -71,15 +100,15 @@ const OrderTop = styled.div`
 `;
 
 const OrderTime = styled.span`
-  font-size: 13px;
+  font-size: 14px;
   color: #8c8278;
 `;
 
 const StatusBadge = styled.span`
   font-size: 12px;
   font-weight: 600;
-  padding: 2px 8px;
-  border-radius: 10px;
+  padding: 3px 9px;
+  border-radius: 12px;
   background: ${(p) => {
     switch (p.$status) {
       case 'pending': return '#FFF3E0';
@@ -104,64 +133,45 @@ const StatusBadge = styled.span`
   }};
 `;
 
+const ItemBlock = styled.div`
+  margin-top: 10px;
+
+  &:first-of-type {
+    margin-top: 0;
+  }
+`;
+
+const ItemName = styled.div`
+  font-size: 15px;
+  font-weight: 700;
+  color: #1a1510;
+  line-height: 1.4;
+`;
+
+const ItemQty = styled.span`
+  font-weight: 400;
+  color: #8c8278;
+  margin-left: 4px;
+`;
+
+const ItemPrice = styled.div`
+  font-size: 13px;
+  color: #8c8278;
+  margin-top: 2px;
+`;
+
 const OrderTotal = styled.span`
   font-size: 15px;
   font-weight: 700;
   color: #1a1510;
 `;
 
-const ItemRow = styled.div`
-  font-size: 14px;
-  color: #5a5046;
-  line-height: 1.6;
-`;
-
-const TotalSummary = styled.div`
-  flex-shrink: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin: 0 20px 12px;
-  padding: 14px 18px;
-  background: #f5f1eb;
-  border-radius: 12px;
-`;
-
-const TotalLabel = styled.span`
-  font-size: 14px;
-  font-weight: 600;
-  color: #5a5046;
-`;
-
-const TotalAmount = styled.span`
-  font-size: 18px;
-  font-weight: 800;
-  color: #1a1510;
-`;
-
-const BottomBar = styled.div`
-  flex-shrink: 0;
-  padding: 12px 20px 24px;
-`;
-
-const CloseButton = styled.button`
-  width: 100%;
-  padding: 16px;
-  border: none;
-  border-radius: 12px;
-  background: #1a1510;
-  color: #fff;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-`;
-
 const statusLabel = {
-  pending: '대기중',
+  pending: '조리대기',
   accepted: '접수됨',
-  preparing: '준비중',
-  ready: '준비완료',
-  served: '서빙완료',
+  preparing: '조리시작',
+  ready: '조리완료',
+  served: '전달완료',
   cancelled: '취소됨',
 };
 
@@ -183,12 +193,14 @@ export default function OrderHistory({ open, onClose, tableId, sessionStartedAt 
       return data;
     },
     enabled: !!tableId && open,
-    refetchInterval: open ? 10000 : false,
   });
 
-  const grandTotal = orders
-    .filter((o) => o.status !== 'cancelled')
-    .reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+  const validOrders = orders.filter((o) => o.status !== 'cancelled');
+  const grandTotal = validOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
+  const totalItemCount = validOrders.reduce(
+    (sum, o) => sum + o.items.reduce((s, i) => s + i.quantity, 0),
+    0
+  );
 
   const touchStartY = useRef(null);
 
@@ -210,16 +222,17 @@ export default function OrderHistory({ open, onClose, tableId, sessionStartedAt 
       <Overlay $open={open} onClick={onClose} />
       <Sheet $open={open} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         <Handle />
-        <Title>주문내역</Title>
-        {orders.length > 0 && (
-          <TotalSummary>
-            <TotalLabel>총 주문 금액</TotalLabel>
-            <TotalAmount>{grandTotal.toLocaleString()}원</TotalAmount>
-          </TotalSummary>
-        )}
+        <HeaderArea>
+          <Title>주문 내역</Title>
+          {totalItemCount > 0 && (
+            <TotalSummary>
+              총 {totalItemCount}개<TotalDivider>|</TotalDivider>{grandTotal.toLocaleString()}원
+            </TotalSummary>
+          )}
+        </HeaderArea>
         <ScrollArea>
           {orders.length === 0 ? (
-            <EmptyState>아직 주문내역이 없습니다</EmptyState>
+            <EmptyState>주문내역이 없습니다</EmptyState>
           ) : (
             orders.map((order) => (
               <OrderItem key={order._id}>
@@ -230,9 +243,13 @@ export default function OrderHistory({ open, onClose, tableId, sessionStartedAt 
                   </StatusBadge>
                 </OrderTop>
                 {order.items.map((item, i) => (
-                  <ItemRow key={i}>
-                    {item.name} x {item.quantity} — {(item.price * item.quantity).toLocaleString()}원
-                  </ItemRow>
+                  <ItemBlock key={i}>
+                    <ItemName>
+                      {item.name}
+                      <ItemQty>× {item.quantity}</ItemQty>
+                    </ItemName>
+                    <ItemPrice>{(item.price * item.quantity).toLocaleString()}원</ItemPrice>
+                  </ItemBlock>
                 ))}
                 <OrderTop style={{ marginTop: 8, marginBottom: 0 }}>
                   <span />
@@ -242,9 +259,6 @@ export default function OrderHistory({ open, onClose, tableId, sessionStartedAt 
             ))
           )}
         </ScrollArea>
-        {/* <BottomBar>
-          <CloseButton onClick={onClose}>닫기</CloseButton>
-        </BottomBar> */}
       </Sheet>
     </>
   );

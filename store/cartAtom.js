@@ -1,6 +1,11 @@
 import { atom } from 'jotai';
+import { atomWithStorage, createJSONStorage } from 'jotai/utils';
 
-export const cartItemsAtom = atom([]);
+const cartStorage = createJSONStorage(() =>
+  typeof window !== 'undefined' ? window.sessionStorage : undefined
+);
+
+export const cartItemsAtom = atomWithStorage('cart', [], cartStorage, { getOnInit: true });
 
 export const cartCountAtom = atom((get) => {
   return get(cartItemsAtom).reduce((sum, item) => sum + item.quantity, 0);

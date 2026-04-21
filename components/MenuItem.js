@@ -23,16 +23,16 @@ const LeftSide = styled.div`
 `;
 
 const Name = styled.div`
-  font-size: 16px;
+  font-size: 19px;
   font-weight: 700;
   color: #1a1510;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 `;
 
 const Price = styled.div`
-  font-size: 15px;
+  font-size: 18px;
   color: #8c8278;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 `;
 
 const BadgeRow = styled.div`
@@ -43,26 +43,26 @@ const BadgeRow = styled.div`
 
 const Badge = styled.span`
   display: inline-block;
-  padding: 2px 8px;
+  padding: 3px 9px;
   border-radius: 4px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
   background: ${(props) => props.$bg};
   color: ${(props) => props.$color};
 `;
 
 const ImagePlaceholder = styled.div`
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
   background: #ede8e0;
   flex-shrink: 0;
 `;
 
 const ProductImage = styled.img`
-  width: 80px;
-  height: 80px;
-  border-radius: 8px;
+  width: 120px;
+  height: 120px;
+  border-radius: 16px;
   object-fit: contain;
   flex-shrink: 0;
   padding: 4px;

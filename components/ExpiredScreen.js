@@ -1,4 +1,6 @@
+import { useState } from 'react';
 import styled from 'styled-components';
+import OrderHistory from './OrderHistory';
 
 const Wrapper = styled.div`
   display: flex;
@@ -52,7 +54,10 @@ const HistoryLink = styled.button`
   padding: 8px;
 `;
 
-export default function ExpiredScreen({ onOrderHistory }) {
+export default function ExpiredScreen({ tableId, sessionStartedAt }) {
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const canShowHistory = !!tableId && !!sessionStartedAt;
+
   return (
     <Wrapper>
       <IconCircle>
@@ -72,8 +77,16 @@ export default function ExpiredScreen({ onOrderHistory }) {
       <SubDescription>
         문의사항은 직원에게 편하게 말씀해주세요.
       </SubDescription>
-      {onOrderHistory && (
-        <HistoryLink onClick={onOrderHistory}>이전 주문내역 보기</HistoryLink>
+      {canShowHistory && (
+        <HistoryLink onClick={() => setHistoryOpen(true)}>이전 주문내역 보기</HistoryLink>
+      )}
+      {canShowHistory && (
+        <OrderHistory
+          open={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+          tableId={tableId}
+          sessionStartedAt={sessionStartedAt}
+        />
       )}
     </Wrapper>
   );

@@ -4,11 +4,12 @@ import styled from 'styled-components';
 import api from '../lib/api';
 
 const Banner = styled.div`
-  margin: 12px 16px;
-  padding: 20px 16px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #d4a05a 0%, #9a6b2e 100%);
-  color: #fff;
+  margin: 12px 16px 4px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #ede8e0;
+  color: #5a5046;
   font-size: 14px;
   font-weight: 500;
   cursor: pointer;
@@ -16,7 +17,7 @@ const Banner = styled.div`
   transition: transform 0.15s ease;
 
   &:active {
-    transform: scale(0.97);
+    transform: scale(0.98);
   }
 `;
 
@@ -37,7 +38,7 @@ const FoldButton = styled.button`
   padding: 0;
   border: none;
   background: none;
-  color: rgba(255, 255, 255, 0.8);
+  color: #8c8278;
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
