@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
@@ -95,8 +95,14 @@ export default function TablePage() {
     }
   }, [token, router]);
 
+  const staffCallLockRef = useRef(false);
   const handleStaffCall = () => {
     if (!table?._id) return;
+    if (staffCallLockRef.current) return;
+    staffCallLockRef.current = true;
+    setTimeout(() => {
+      staffCallLockRef.current = false;
+    }, 2000);
     staffCallMutation.mutate(
       { tableId: table._id, tableNumber: table.number, floor: table.floor, sessionStartedAt },
       {

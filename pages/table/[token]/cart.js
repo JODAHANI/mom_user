@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { useAtom } from 'jotai';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
@@ -258,8 +258,14 @@ export default function CartPage() {
     }
   }, [token, router]);
 
+  const orderLockRef = useRef(false);
   const handleOrder = () => {
     if (!table?._id || cartItems.length === 0) return;
+    if (orderLockRef.current) return;
+    orderLockRef.current = true;
+    setTimeout(() => {
+      orderLockRef.current = false;
+    }, 2000);
 
     const orderData = {
       tableId: table._id,
