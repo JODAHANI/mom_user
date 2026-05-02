@@ -239,13 +239,18 @@ export default function CartPage() {
 
   const table = tableData?.data || tableData;
   useOrderWebSocket(table?._id);
-  const { sessionStartedAt, expired, expiredClearedAt } = useSession(token, table?.lastClearedAt);
+  const { sessionStartedAt, sessionClearedAt, expired, expiredClearedAt } = useSession(token, table?.lastClearedAt);
 
   useEffect(() => {
     if (expired) {
       clearCart();
     }
   }, [expired, clearCart]);
+
+  useEffect(() => {
+    if (!expired || !token) return;
+    router.replace({ pathname: '/table/[token]', query: { token } }, '/table');
+  }, [expired, token, router]);
 
   useEffect(() => {
     if (!token || typeof window === 'undefined') return;
@@ -302,7 +307,7 @@ export default function CartPage() {
   };
 
   if (expired) {
-    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} expiredClearedAt={expiredClearedAt} />;
+    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} sessionClearedAt={sessionClearedAt} expiredClearedAt={expiredClearedAt} />;
   }
 
   return (

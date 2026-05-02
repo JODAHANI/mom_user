@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import api from '../../../lib/api';
 import { formatPrice } from '../../../lib/format';
 import { useSession } from '../../../hooks/useSession';
@@ -168,6 +168,38 @@ const EmptyState = styled.div`
   font-size: 17px;
 `;
 
+const bounce = keyframes`
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-12px);
+    opacity: 1;
+  }
+`;
+
+const LoadingWrap = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px;
+`;
+
+const Dots = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const Dot = styled.span`
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c3904a;
+  animation: ${bounce} 1.2s ease-in-out infinite;
+  animation-delay: ${({ $delay }) => $delay};
+`;
+
 const statusLabel = {
   pending: '조리대기',
   accepted: '접수됨',
@@ -190,7 +222,7 @@ export default function OrdersPage() {
   const router = useRouter();
   const { token } = router.query;
 
-  const { data: tableData } = useQuery({
+  const { data: tableData, isLoading: tableLoading } = useQuery({
     queryKey: ['table', token],
     queryFn: () => api.get(`/tables/token/${token}`).then((res) => res.data),
     enabled: !!token,
@@ -198,9 +230,9 @@ export default function OrdersPage() {
 
   const table = tableData?.data || tableData;
   useOrderWebSocket(table?._id);
-  const { sessionStartedAt, expired, expiredClearedAt } = useSession(token, table?.lastClearedAt);
+  const { sessionStartedAt, sessionClearedAt, expired, expiredClearedAt } = useSession(token, table?.lastClearedAt);
 
-  const { data: orders = [] } = useQuery({
+  const { data: orders = [], isLoading: ordersLoading } = useQuery({
     queryKey: ['table-orders', table?._id, table?.lastClearedAt],
     queryFn: async () => {
       const { data } = await api.get(`/orders/table/${table._id}`);
@@ -209,6 +241,8 @@ export default function OrdersPage() {
     enabled: !!table?._id,
     refetchInterval: 10000,
   });
+
+  const isLoading = tableLoading || ordersLoading;
 
   const validOrders = orders.filter((o) => o.status !== 'cancelled');
   const grandTotal = validOrders.reduce((sum, o) => sum + (o.totalPrice || 0), 0);
@@ -229,10 +263,15 @@ export default function OrdersPage() {
     }
   }, [token, router]);
 
+  useEffect(() => {
+    if (!expired || !token) return;
+    router.replace({ pathname: '/table/[token]', query: { token } }, '/table');
+  }, [expired, token, router]);
+
   if (!token) return <LoadingScreen message="주문내역을 불러오고 있어요" />;
 
   if (expired) {
-    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} expiredClearedAt={expiredClearedAt} />;
+    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} sessionClearedAt={sessionClearedAt} expiredClearedAt={expiredClearedAt} />;
   }
 
   return (
@@ -252,7 +291,15 @@ export default function OrdersPage() {
 
       <SectionGap />
 
-      {orders.length === 0 ? (
+      {isLoading ? (
+        <LoadingWrap>
+          <Dots>
+            <Dot $delay="0s" />
+            <Dot $delay="0.15s" />
+            <Dot $delay="0.3s" />
+          </Dots>
+        </LoadingWrap>
+      ) : orders.length === 0 ? (
         <EmptyState>아직 주문내역이 없습니다</EmptyState>
       ) : (
         <OrdersList>

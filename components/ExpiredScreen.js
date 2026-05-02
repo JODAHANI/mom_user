@@ -54,7 +54,7 @@ const HistoryLink = styled.button`
   padding: 8px;
 `;
 
-export default function ExpiredScreen({ tableId, sessionStartedAt, expiredClearedAt }) {
+export default function ExpiredScreen({ tableId, sessionStartedAt, sessionClearedAt, expiredClearedAt }) {
   const [historyOpen, setHistoryOpen] = useState(false);
   const canShowHistory = !!tableId && !!sessionStartedAt;
 
@@ -85,7 +85,7 @@ export default function ExpiredScreen({ tableId, sessionStartedAt, expiredCleare
           open={historyOpen}
           onClose={() => setHistoryOpen(false)}
           tableId={tableId}
-          sessionStartedAt={sessionStartedAt}
+          sessionClearedAt={sessionClearedAt}
           before={expiredClearedAt}
         />
       )}

@@ -1,6 +1,6 @@
 import { useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import api from '../lib/api';
 import { formatPrice } from '../lib/format';
 
@@ -107,6 +107,39 @@ const EmptyState = styled.div`
   font-size: 15px;
 `;
 
+const bounce = keyframes`
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-12px);
+    opacity: 1;
+  }
+`;
+
+const LoadingWrap = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+`;
+
+const Dots = styled.div`
+  display: flex;
+  gap: 8px;
+`;
+
+const Dot = styled.span`
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #c3904a;
+  animation: ${bounce} 1.2s ease-in-out infinite;
+  animation-delay: ${({ $delay }) => $delay};
+`;
+
 const OrderItem = styled.div`
   background: #fff;
   border-radius: 12px;
@@ -206,12 +239,18 @@ function formatTime(iso) {
   return `${period} ${hour}:${m}`;
 }
 
-export default function OrderHistory({ open, onClose, tableId, sessionStartedAt, before }) {
-  const { data: orders = [] } = useQuery({
-    queryKey: ['table-orders', tableId, sessionStartedAt, before],
+export default function OrderHistory({ open, onClose, tableId, sessionClearedAt, before }) {
+  const { data: orders = [], isLoading } = useQuery({
+    queryKey: ['table-orders', tableId, sessionClearedAt, before],
     queryFn: async () => {
       const params = {};
-      if (sessionStartedAt) params.after = sessionStartedAt;
+      if (sessionClearedAt) {
+        params.after = sessionClearedAt;
+      } else if (before) {
+        // 한 번도 결제된 적 없는 테이블의 첫 세션 — 서버가 lastClearedAt(=expiredClearedAt)
+        // 폴백으로 빈 범위가 나오는 걸 방지하려고 멀리 과거를 보냄.
+        params.after = '1970-01-01T00:00:00.000Z';
+      }
       if (before) params.before = before;
       const { data } = await api.get(`/orders/table/${tableId}`, { params });
       return data;
@@ -265,7 +304,15 @@ export default function OrderHistory({ open, onClose, tableId, sessionStartedAt,
           )}
         </HeaderArea>
         <ScrollArea>
-          {orders.length === 0 ? (
+          {isLoading ? (
+            <LoadingWrap>
+              <Dots>
+                <Dot $delay="0s" />
+                <Dot $delay="0.15s" />
+                <Dot $delay="0.3s" />
+              </Dots>
+            </LoadingWrap>
+          ) : orders.length === 0 ? (
             <EmptyState>주문내역이 없습니다</EmptyState>
           ) : (
             orders.map((order) => (

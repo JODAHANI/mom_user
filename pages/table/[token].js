@@ -72,7 +72,7 @@ export default function TablePage() {
 
   const table = tableData?.data || tableData;
   useOrderWebSocket(table?._id);
-  const { sessionStartedAt, expired, expiredClearedAt } = useSession(token, table?.lastClearedAt);
+  const { sessionStartedAt, sessionClearedAt, expired, expiredClearedAt } = useSession(token, table?.lastClearedAt);
   const categories = categoriesData?.data || categoriesData || [];
   const allProducts = productsData?.data || productsData || [];
   const products = allProducts.filter((p) => p.showOnTable !== false);
@@ -262,7 +262,7 @@ export default function TablePage() {
   }
 
   if (expired) {
-    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} expiredClearedAt={expiredClearedAt} />;
+    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} sessionClearedAt={sessionClearedAt} expiredClearedAt={expiredClearedAt} />;
   }
 
   return (
