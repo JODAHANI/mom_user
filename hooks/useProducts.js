@@ -1,15 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
 import api from '../lib/api';
 
-export const useProducts = (categoryId) => {
+export const useProducts = () => {
   return useQuery({
-    queryKey: ['products', categoryId],
-    queryFn: () => {
-      const params = { showOnTable: true };
-      if (categoryId && categoryId !== 'all') {
-        params.category = categoryId;
-      }
-      return api.get('/products', { params }).then(res => res.data);
-    },
+    queryKey: ['products'],
+    queryFn: () =>
+      api
+        .get('/products', { params: { showOnTable: true } })
+        .then((res) => res.data),
   });
 };

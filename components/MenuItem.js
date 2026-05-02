@@ -29,6 +29,17 @@ const Name = styled.div`
   margin-bottom: 6px;
 `;
 
+const Description = styled.div`
+  font-size: 13px;
+  color: #8c8278;
+  line-height: 1.4;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+`;
+
 const Price = styled.div`
   font-size: 18px;
   color: #8c8278;
@@ -144,6 +155,7 @@ export default function MenuItem({ product, onAdd }) {
       <Card $soldOut={isSoldOut} $pressed={pressed} onClick={handleClick}>
         <LeftSide>
           <Name>{product.name}</Name>
+          {product.description && <Description>{product.description}</Description>}
           <Price>{product.price?.toLocaleString()}원</Price>
           {badges.length > 0 && (
             <BadgeRow>

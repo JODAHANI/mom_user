@@ -29,6 +29,7 @@ const GlobalStyle = createGlobalStyle`
   a {
     color: inherit;
     text-decoration: none;
+    -webkit-tap-highlight-color: transparent;
   }
 
   button {
@@ -36,6 +37,7 @@ const GlobalStyle = createGlobalStyle`
     border: none;
     background: none;
     font-family: inherit;
+    -webkit-tap-highlight-color: transparent;
   }
 
   ul, ol {

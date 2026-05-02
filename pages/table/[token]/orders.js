@@ -43,7 +43,7 @@ const PageTitle = styled.h1`
   font-weight: 800;
   color: #1a1510;
   letter-spacing: -0.8px;
-  margin: 0 0 10px;
+  margin: 0 0 28px;
   line-height: 1.15;
 `;
 
@@ -243,7 +243,6 @@ export default function OrdersPage() {
 
       <PageHeader>
         <PageTitle>주문 내역</PageTitle>
-        <Notice>나가실 때 카운터에서 결제 부탁드려요.</Notice>
         {totalItemCount > 0 && (
           <TotalSummary>
             총 {totalItemCount}개<TotalDivider>|</TotalDivider>{grandTotal.toLocaleString()}원

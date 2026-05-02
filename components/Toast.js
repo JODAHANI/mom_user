@@ -17,7 +17,10 @@ const fadeOut = keyframes`
 
 const Container = styled.div`
   position: fixed;
-  bottom: ${(p) => (p.$hasBar ? '80px' : '24px')};
+  bottom: ${(p) =>
+    p.$hasBar
+      ? 'calc(110px + env(safe-area-inset-bottom, 0px))'
+      : 'calc(24px + env(safe-area-inset-bottom, 0px))'};
   left: 50%;
   transform: translateX(-50%);
   z-index: 9999;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAtom } from 'jotai';
@@ -68,7 +68,7 @@ export default function TablePage() {
   });
 
   const { data: categoriesData } = useCategories();
-  const { data: productsData } = useProducts(selectedCategory);
+  const { data: productsData } = useProducts();
 
   const table = tableData?.data || tableData;
   useOrderWebSocket(table?._id);
@@ -76,6 +76,79 @@ export default function TablePage() {
   const categories = categoriesData?.data || categoriesData || [];
   const allProducts = productsData?.data || productsData || [];
   const products = allProducts.filter((p) => p.showOnTable !== false);
+
+  const groupedProducts = useMemo(() => {
+    if (!categories.length) return [];
+    const groups = categories.map((cat) => ({
+      category: cat,
+      items: products.filter((p) =>
+        (p.categoryIds || []).some((c) => (c?._id || c) === cat._id)
+      ),
+    }));
+    return groups.filter((g) => g.items.length > 0);
+  }, [categories, products]);
+
+  const scrollLockRef = useRef(false);
+  const scrollLockTimerRef = useRef(null);
+
+  useEffect(() => {
+    if (groupedProducts.length === 0) return;
+    let raf = 0;
+    const onScroll = () => {
+      if (scrollLockRef.current) return;
+      cancelAnimationFrame(raf);
+      raf = requestAnimationFrame(() => {
+        if (scrollLockRef.current) return;
+        if (window.scrollY < 80) {
+          setSelectedCategory('all');
+          return;
+        }
+        const sections = document.querySelectorAll('[data-category-id]');
+        if (sections.length === 0) return;
+
+        const atBottom =
+          window.innerHeight + Math.ceil(window.scrollY) >=
+          document.documentElement.scrollHeight - 2;
+        if (atBottom) {
+          setSelectedCategory(
+            sections[sections.length - 1].dataset.categoryId
+          );
+          return;
+        }
+
+        const trigger = 80;
+        let current = null;
+        for (const sec of sections) {
+          const top = sec.getBoundingClientRect().top;
+          if (top <= trigger) current = sec;
+          else break;
+        }
+        if (current) setSelectedCategory(current.dataset.categoryId);
+      });
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      cancelAnimationFrame(raf);
+    };
+  }, [groupedProducts.length]);
+
+  const handleSelectCategory = (id) => {
+    setSelectedCategory(id);
+    scrollLockRef.current = true;
+    if (scrollLockTimerRef.current) clearTimeout(scrollLockTimerRef.current);
+    scrollLockTimerRef.current = setTimeout(() => {
+      scrollLockRef.current = false;
+      scrollLockTimerRef.current = null;
+    }, 1000);
+    if (id === 'all') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      return;
+    }
+    const el = document.getElementById(`cat-${id}`);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
 
   useEffect(() => {
     if (expired) {
@@ -199,9 +272,9 @@ export default function TablePage() {
       <CategoryTabs
         categories={categories}
         activeId={selectedCategory}
-        onSelect={setSelectedCategory}
+        onSelect={handleSelectCategory}
       />
-      <MenuList products={products} onAddToCart={handleAddToCart} />
+      <MenuList groups={groupedProducts} onAddToCart={handleAddToCart} />
       <CartBar count={cartCount} total={cartTotal} onClick={handleOrderSubmit} pending={orderMutation.isPending} />
     </PageWrapper>
   );
