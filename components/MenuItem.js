@@ -170,10 +170,8 @@ export default function MenuItem({ product, onAdd }) {
             </BadgeRow>
           )}
         </LeftSide>
-        {product.image ? (
+        {product.image && (
           <ProductImage src={product.image} alt={product.name} onClick={handleImageClick} />
-        ) : (
-          <ImagePlaceholder />
         )}
       </Card>
       {imageOpen && (
