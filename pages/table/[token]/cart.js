@@ -4,6 +4,7 @@ import { useAtom } from 'jotai';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import styled, { keyframes } from 'styled-components';
 import api from '../../../lib/api';
+import { formatPrice } from '../../../lib/format';
 import { useOrder } from '../../../hooks/useOrder';
 import { useSession } from '../../../hooks/useSession';
 import { useOrderWebSocket } from '../../../hooks/useWebSocket';
@@ -238,7 +239,7 @@ export default function CartPage() {
 
   const table = tableData?.data || tableData;
   useOrderWebSocket(table?._id);
-  const { sessionStartedAt, expired } = useSession(token, table?.lastClearedAt);
+  const { sessionStartedAt, expired, expiredClearedAt } = useSession(token, table?.lastClearedAt);
 
   useEffect(() => {
     if (expired) {
@@ -301,7 +302,7 @@ export default function CartPage() {
   };
 
   if (expired) {
-    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} />;
+    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} expiredClearedAt={expiredClearedAt} />;
   }
 
   return (
@@ -321,7 +322,7 @@ export default function CartPage() {
                 <TopRow>
                   <ItemInfo>
                     <ItemName>{item.name}</ItemName>
-                    <ItemPrice>{(item.price * item.quantity).toLocaleString()}원</ItemPrice>
+                    <ItemPrice>{formatPrice(item.price * item.quantity)}</ItemPrice>
                   </ItemInfo>
                   <RemoveButton onClick={() => { removeFromCart(item.productId); showToast(`${item.name} 삭제`, 'delete'); }}>&times;</RemoveButton>
                 </TopRow>
@@ -351,7 +352,7 @@ export default function CartPage() {
           <OrderButton onClick={handleOrder} disabled={orderMutation.isPending}>
             <CountBubble>{cartCount}</CountBubble>
             <Label>
-              {orderMutation.isPending ? '주문 중...' : `${cartTotal.toLocaleString()}원 주문하기`}
+              {orderMutation.isPending ? '주문 중...' : `${formatPrice(cartTotal)} 주문하기`}
             </Label>
           </OrderButton>
         </>

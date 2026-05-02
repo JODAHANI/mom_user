@@ -2,6 +2,7 @@ import { useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
 import api from '../lib/api';
+import { formatPrice } from '../lib/format';
 
 const Overlay = styled.div`
   position: fixed;
@@ -44,6 +45,27 @@ const Handle = styled.div`
 const HeaderArea = styled.div`
   flex-shrink: 0;
   padding: 4px 20px 18px;
+  position: relative;
+`;
+
+const CloseButton = styled.button`
+  position: absolute;
+  top: 0;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #8c8278;
+
+  &:active {
+    color: #1a1510;
+  }
 `;
 
 const Title = styled.h2`
@@ -184,11 +206,13 @@ function formatTime(iso) {
   return `${period} ${hour}:${m}`;
 }
 
-export default function OrderHistory({ open, onClose, tableId, sessionStartedAt }) {
+export default function OrderHistory({ open, onClose, tableId, sessionStartedAt, before }) {
   const { data: orders = [] } = useQuery({
-    queryKey: ['table-orders', tableId, sessionStartedAt],
+    queryKey: ['table-orders', tableId, sessionStartedAt, before],
     queryFn: async () => {
-      const params = sessionStartedAt ? { after: sessionStartedAt } : {};
+      const params = {};
+      if (sessionStartedAt) params.after = sessionStartedAt;
+      if (before) params.before = before;
       const { data } = await api.get(`/orders/table/${tableId}`, { params });
       return data;
     },
@@ -223,10 +247,20 @@ export default function OrderHistory({ open, onClose, tableId, sessionStartedAt 
       <Sheet $open={open} onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
         <Handle />
         <HeaderArea>
+          <CloseButton onClick={onClose} aria-label="닫기">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M6 6L18 18M6 18L18 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+              />
+            </svg>
+          </CloseButton>
           <Title>주문 내역</Title>
           {totalItemCount > 0 && (
             <TotalSummary>
-              총 {totalItemCount}개<TotalDivider>|</TotalDivider>{grandTotal.toLocaleString()}원
+              총 {totalItemCount}개<TotalDivider>|</TotalDivider>{formatPrice(grandTotal)}
             </TotalSummary>
           )}
         </HeaderArea>
@@ -248,12 +282,12 @@ export default function OrderHistory({ open, onClose, tableId, sessionStartedAt 
                       {item.name}
                       <ItemQty>× {item.quantity}</ItemQty>
                     </ItemName>
-                    <ItemPrice>{(item.price * item.quantity).toLocaleString()}원</ItemPrice>
+                    <ItemPrice>{formatPrice(item.price * item.quantity)}</ItemPrice>
                   </ItemBlock>
                 ))}
                 <OrderTop style={{ marginTop: 8, marginBottom: 0 }}>
                   <span />
-                  <OrderTotal>{order.totalPrice.toLocaleString()}원</OrderTotal>
+                  <OrderTotal>{formatPrice(order.totalPrice)}</OrderTotal>
                 </OrderTop>
               </OrderItem>
             ))

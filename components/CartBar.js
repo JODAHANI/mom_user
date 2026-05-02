@@ -1,4 +1,5 @@
 import styled, { keyframes } from 'styled-components';
+import { formatPrice } from '../lib/format';
 
 const bounce = keyframes`
   0%, 100% { transform: translateY(0); }
@@ -63,7 +64,7 @@ export default function CartBar({ count, total, onClick, pending }) {
   return (
     <Bar $visible={count > 0} $pending={pending} onClick={onClick}>
       <CountBubble>{count}</CountBubble>
-      <Label>{pending ? '주문 중...' : `${total?.toLocaleString()}원 주문하기`}</Label>
+      <Label>{pending ? '주문 중...' : `${formatPrice(total)} 주문하기`}</Label>
     </Bar>
   );
 }

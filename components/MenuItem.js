@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
+import { formatPrice } from '../lib/format';
 
 const Card = styled.div`
   padding: 16px;
@@ -156,7 +157,7 @@ export default function MenuItem({ product, onAdd }) {
         <LeftSide>
           <Name>{product.name}</Name>
           {product.description && <Description>{product.description}</Description>}
-          <Price>{product.price?.toLocaleString()}원</Price>
+          <Price>{formatPrice(product.price)}</Price>
           {badges.length > 0 && (
             <BadgeRow>
               {badges.map((badge) => {

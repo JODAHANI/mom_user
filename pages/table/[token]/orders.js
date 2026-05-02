@@ -3,6 +3,7 @@ import { useRouter } from 'next/router';
 import { useQuery } from '@tanstack/react-query';
 import styled from 'styled-components';
 import api from '../../../lib/api';
+import { formatPrice } from '../../../lib/format';
 import { useSession } from '../../../hooks/useSession';
 import { useOrderWebSocket } from '../../../hooks/useWebSocket';
 import ExpiredScreen from '../../../components/ExpiredScreen';
@@ -197,13 +198,12 @@ export default function OrdersPage() {
 
   const table = tableData?.data || tableData;
   useOrderWebSocket(table?._id);
-  const { sessionStartedAt, expired } = useSession(token, table?.lastClearedAt);
+  const { sessionStartedAt, expired, expiredClearedAt } = useSession(token, table?.lastClearedAt);
 
   const { data: orders = [] } = useQuery({
-    queryKey: ['table-orders', table?._id, sessionStartedAt],
+    queryKey: ['table-orders', table?._id, table?.lastClearedAt],
     queryFn: async () => {
-      const params = sessionStartedAt ? { after: sessionStartedAt } : {};
-      const { data } = await api.get(`/orders/table/${table._id}`, { params });
+      const { data } = await api.get(`/orders/table/${table._id}`);
       return data;
     },
     enabled: !!table?._id,
@@ -232,7 +232,7 @@ export default function OrdersPage() {
   if (!token) return <LoadingScreen message="주문내역을 불러오고 있어요" />;
 
   if (expired) {
-    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} />;
+    return <ExpiredScreen tableId={table?._id} sessionStartedAt={sessionStartedAt} expiredClearedAt={expiredClearedAt} />;
   }
 
   return (
@@ -245,7 +245,7 @@ export default function OrdersPage() {
         <PageTitle>주문 내역</PageTitle>
         {totalItemCount > 0 && (
           <TotalSummary>
-            총 {totalItemCount}개<TotalDivider>|</TotalDivider>{grandTotal.toLocaleString()}원
+            총 {totalItemCount}개<TotalDivider>|</TotalDivider>{formatPrice(grandTotal)}
           </TotalSummary>
         )}
       </PageHeader>
@@ -270,12 +270,12 @@ export default function OrdersPage() {
                     {item.name}
                     <ItemQty>× {item.quantity}</ItemQty>
                   </ItemName>
-                  <ItemPrice>{(item.price * item.quantity).toLocaleString()}원</ItemPrice>
+                  <ItemPrice>{formatPrice(item.price * item.quantity)}</ItemPrice>
                 </ItemBlock>
               ))}
               <OrderTop style={{ marginTop: 10, marginBottom: 0 }}>
                 <span />
-                <OrderTotal>{order.totalPrice.toLocaleString()}원</OrderTotal>
+                <OrderTotal>{formatPrice(order.totalPrice)}</OrderTotal>
               </OrderTop>
             </OrderItem>
           ))}
