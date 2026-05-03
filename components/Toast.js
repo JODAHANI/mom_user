@@ -66,7 +66,6 @@ const Icon = styled.span`
 `;
 
 const typeIcons = {
-  success: '🛒',
   error: '⚠️',
   delete: '❌',
   info: '🔔',
@@ -104,7 +103,9 @@ export function ToastProvider({ children }) {
         <Container $hasBar={cartCount > 0}>
           {toasts.map((t) => (
             <ToastItem key={t.id} $type={t.type} $removing={t.removing} onClick={() => removeToast(t.id)}>
-              <Icon $text={typeof typeIcons[t.type] === 'string' && typeIcons[t.type].length === 1}>{typeIcons[t.type] || '✓'}</Icon>
+              {typeIcons[t.type] && (
+                <Icon $text={typeIcons[t.type].length === 1}>{typeIcons[t.type]}</Icon>
+              )}
               {t.message}
             </ToastItem>
           ))}

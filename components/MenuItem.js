@@ -35,6 +35,7 @@ const Description = styled.div`
   color: #8c8278;
   line-height: 1.4;
   margin-bottom: 8px;
+  white-space: pre-line;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
