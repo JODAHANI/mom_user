@@ -48,6 +48,7 @@ const BadgeRow = styled.div`
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
+  margin-bottom: 6px;
 `;
 
 const Badge = styled.span`
@@ -152,9 +153,6 @@ export default function MenuItem({ product, onAdd }) {
     <>
       <Card $soldOut={isSoldOut} $pressed={pressed} onClick={handleClick}>
         <LeftSide>
-          <Name>{product.name}</Name>
-          {product.description && <Description>{product.description}</Description>}
-          <Price>{formatPrice(product.price)}</Price>
           {badges.length > 0 && (
             <BadgeRow>
               {badges.map((badge) => {
@@ -167,6 +165,9 @@ export default function MenuItem({ product, onAdd }) {
               })}
             </BadgeRow>
           )}
+          <Name>{product.name}</Name>
+          {product.description && <Description>{product.description}</Description>}
+          <Price>{formatPrice(product.price)}</Price>
         </LeftSide>
         {product.image && (
           <ProductImage src={product.image} alt={product.name} onClick={handleImageClick} />
