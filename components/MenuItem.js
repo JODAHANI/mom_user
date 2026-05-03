@@ -36,10 +36,6 @@ const Description = styled.div`
   line-height: 1.4;
   margin-bottom: 8px;
   white-space: pre-line;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
 `;
 
 const Price = styled.div`
