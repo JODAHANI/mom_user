@@ -7,8 +7,8 @@ const Banner = styled.div`
   margin: 12px 16px 4px;
   padding: 10px 14px;
   border-radius: 10px;
-  background: #fff;
-  border: 1px solid #ede8e0;
+  background: #FBF8F1;
+  border: 1px solid #d8cdb8;
   color: #5a5046;
   font-size: 14px;
   font-weight: 500;

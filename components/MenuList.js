@@ -23,15 +23,7 @@ const SectionTitle = styled.h2`
   font-weight: 800;
   color: #1a1510;
   letter-spacing: -0.5px;
-  padding: 0 16px 14px;
-
-  &::before {
-    content: '';
-    width: 4px;
-    height: 20px;
-    background: #c3904a;
-    border-radius: 2px;
-  }
+  padding: 0 16px 14px 26px;
 `;
 
 const SectionCount = styled.span`

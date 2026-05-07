@@ -1,7 +1,7 @@
 import styled from 'styled-components';
 
 const HeaderWrapper = styled.header`
-  background: #fff;
+  background: #f5f1eb;
   padding: calc(env(safe-area-inset-top, 0px) + 32px) 24px 20px;
 `;
 
@@ -65,14 +65,16 @@ const ActionButton = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 7px;
   border-radius: 10px;
-  background: #f5f1eb;
-  color: #5a5046;
+  background: #FBF8F1;
+  border: 1px solid #d8cdb8;
+  color: #1a1510;
   font-size: 17px;
   font-weight: 700;
 
   &:active {
-    background: #ede6d8;
+    background: #f0e8d6;
   }
 `;
 
@@ -85,6 +87,23 @@ const BellIcon = () => (
 const PinIcon = () => (
   <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
     <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2ZM12 11.5C10.62 11.5 9.5 10.38 9.5 9C9.5 7.62 10.62 6.5 12 6.5C13.38 6.5 14.5 7.62 14.5 9C14.5 10.38 13.38 11.5 12 11.5Z" fill="#c3904a"/>
+  </svg>
+);
+
+const CartIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1510" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+    <path d="M3 6h18" />
+    <path d="M16 10a4 4 0 0 1-8 0" />
+  </svg>
+);
+
+const ClipboardIcon = () => (
+  <svg width="19" height="20" viewBox="0 0 24 24" fill="none" stroke="#1a1510" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+    <rect x="8" y="2" width="8" height="4" rx="1" />
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <path d="M9 12h7" />
+    <path d="M9 16h5" />
   </svg>
 );
 
@@ -107,8 +126,14 @@ export default function Header({ table, onStaffCall, onOrderHistory, onCart }) {
         </StaffCallPill>
       </TopRow>
       <ActionBar>
-        <ActionButton onClick={onCart}>장바구니</ActionButton>
-        <ActionButton onClick={onOrderHistory}>주문내역</ActionButton>
+        <ActionButton onClick={onCart}>
+          <CartIcon />
+          장바구니
+        </ActionButton>
+        <ActionButton onClick={onOrderHistory}>
+          <ClipboardIcon />
+          주문내역
+        </ActionButton>
       </ActionBar>
     </HeaderWrapper>
   );

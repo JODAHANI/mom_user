@@ -25,9 +25,8 @@ const PageWrapper = styled.div`
 `;
 
 const TopBar = styled.header`
-  background: #fff;
+  background: #f5f1eb;
   padding: 16px;
-  border-bottom: 1px solid #e5ded4;
   display: flex;
   align-items: center;
   position: relative;
@@ -52,7 +51,8 @@ const CartList = styled.div`
 `;
 
 const CartItem = styled.div`
-  background: #fff;
+  background: #FBF8F1;
+  border: 1px solid #d8cdb8;
   border-radius: 12px;
   padding: 18px;
   margin-bottom: 12px;
@@ -141,7 +141,7 @@ const Quantity = styled.span`
   height: 30px;
   padding: 0 10px;
   border-radius: 8px;
-  background: #fff;
+  background: #FBF8F1;
   font-size: 16px;
   font-weight: 600;
   color: #1a1510;
@@ -197,7 +197,7 @@ const CountBubble = styled.span`
   height: 28px;
   padding: 0 8px;
   border-radius: 14px;
-  background: #fff;
+  background: #FBF8F1;
   color: #c3904a;
   font-size: 15px;
   font-weight: 800;

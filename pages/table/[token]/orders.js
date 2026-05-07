@@ -16,75 +16,107 @@ const PageWrapper = styled.div`
 `;
 
 const TopBar = styled.header`
-  background: #fff;
-  padding: calc(env(safe-area-inset-top, 0px) + 12px) 8px 8px;
-  display: flex;
-  align-items: center;
+  background: #f5f1eb;
+  padding-top: env(safe-area-inset-top, 0px);
   position: sticky;
   top: 0;
   z-index: 10;
 `;
 
-const BackButton = styled.button`
-  font-size: 24px;
-  padding: 8px 12px;
-  color: #1a1510;
-  background: none;
-  border: none;
-  line-height: 1;
+const TopBarInner = styled.div`
+  position: relative;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
-const PageHeader = styled.section`
-  background: #fff;
-  padding: 4px 22px 24px;
+const BackButton = styled.button`
+  position: absolute;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  color: #1a1510;
+
+  &:active {
+    color: #8c8278;
+  }
 `;
 
 const PageTitle = styled.h1`
-  font-size: 30px;
-  font-weight: 800;
+  font-size: 17px;
+  font-weight: 700;
   color: #1a1510;
-  letter-spacing: -0.8px;
-  margin: 0 0 28px;
-  line-height: 1.15;
+  margin: 0;
+  letter-spacing: -0.3px;
 `;
 
-const Notice = styled.p`
-  font-size: 14px;
-  font-weight: 600;
-  color: #c2453a;
-  margin: 0 0 22px;
-  letter-spacing: -0.2px;
+const SummaryArea = styled.section`
+  background: #f5f1eb;
+  padding: 18px 16px 16px;
 `;
 
-const TotalSummary = styled.div`
+const SummaryPill = styled.div`
+  background: #FBF8F1;
+  border: 1px solid #d8cdb8;
+  border-radius: 16px;
+  padding: 26px 26px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const SummaryCount = styled.span`
+  font-size: 17px;
+  color: #8c8278;
+  font-weight: 500;
+`;
+
+const SummaryTotal = styled.span`
   font-size: 26px;
   font-weight: 800;
   color: #1a1510;
-  letter-spacing: -0.6px;
+  letter-spacing: -0.4px;
   font-variant-numeric: tabular-nums;
-  line-height: 1.1;
-`;
-
-const TotalDivider = styled.span`
-  margin: 0 10px;
-  color: #d1cbc3;
-  font-weight: 400;
-`;
-
-const SectionGap = styled.div`
-  height: 8px;
-  background: #f5f1eb;
 `;
 
 const OrdersList = styled.div`
-  padding: 16px;
+  padding: 12px 16px calc(16px + env(safe-area-inset-bottom, 0px));
 `;
 
 const OrderItem = styled.div`
-  background: #fff;
-  border-radius: 12px;
-  padding: 16px 18px;
+  background: #FBF8F1;
+  border: 1px solid #d8cdb8;
+  border-radius: 14px;
+  padding: 16px 18px 14px;
   margin-bottom: 12px;
+`;
+
+const TotalDivider = styled.div`
+  height: 1px;
+  background: #f0e8d6;
+  margin: 12px 0 10px;
+`;
+
+const TotalRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+`;
+
+const TotalLabel = styled.span`
+  font-size: 14px;
+  color: #8c8278;
+  font-weight: 500;
 `;
 
 const OrderTop = styled.div`
@@ -156,9 +188,11 @@ const ItemPrice = styled.div`
 `;
 
 const OrderTotal = styled.span`
-  font-size: 17px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   color: #1a1510;
+  letter-spacing: -0.3px;
+  font-variant-numeric: tabular-nums;
 `;
 
 const EmptyState = styled.div`
@@ -277,19 +311,30 @@ export default function OrdersPage() {
   return (
     <PageWrapper>
       <TopBar>
-        <BackButton onClick={() => router.back()}>&#8592;</BackButton>
+        <TopBarInner>
+          <BackButton onClick={() => router.back()} aria-label="뒤로">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M15 18L9 12L15 6"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </BackButton>
+          <PageTitle>주문 내역</PageTitle>
+        </TopBarInner>
       </TopBar>
 
-      <PageHeader>
-        <PageTitle>주문 내역</PageTitle>
-        {totalItemCount > 0 && (
-          <TotalSummary>
-            총 {totalItemCount}개<TotalDivider>|</TotalDivider>{formatPrice(grandTotal)}
-          </TotalSummary>
-        )}
-      </PageHeader>
-
-      <SectionGap />
+      {totalItemCount > 0 && (
+        <SummaryArea>
+          <SummaryPill>
+            <SummaryCount>총 {totalItemCount}개</SummaryCount>
+            <SummaryTotal>{formatPrice(grandTotal)}</SummaryTotal>
+          </SummaryPill>
+        </SummaryArea>
+      )}
 
       {isLoading ? (
         <LoadingWrap>
@@ -320,10 +365,11 @@ export default function OrdersPage() {
                   <ItemPrice>{formatPrice(item.price * item.quantity)}</ItemPrice>
                 </ItemBlock>
               ))}
-              <OrderTop style={{ marginTop: 10, marginBottom: 0 }}>
-                <span />
+              <TotalDivider />
+              <TotalRow>
+                <TotalLabel>합계</TotalLabel>
                 <OrderTotal>{formatPrice(order.totalPrice)}</OrderTotal>
-              </OrderTop>
+              </TotalRow>
             </OrderItem>
           ))}
         </OrdersList>

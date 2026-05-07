@@ -9,7 +9,8 @@ const Card = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
-  background: #fff;
+  background: #FBF8F1;
+  border: 1px solid #d8cdb8;
   cursor: pointer;
   transition: transform 0.1s ease;
   opacity: ${(props) => (props.$soldOut ? 0.5 : 1)};
@@ -121,9 +122,9 @@ const CloseHint = styled.div`
 `;
 
 const badgeStyles = {
-  '추천': { bg: '#f5edd8', color: '#c3904a' },
+  '추천': { bg: '#E3F2FD', color: '#1976D2' },
   '사장님 추천': { bg: '#FFF8E1', color: '#F59E0B' },
-  '인기': { bg: '#FFF3E0', color: '#FF9500' },
+  '인기': { bg: '#E8F5E9', color: '#2E7D32' },
   '시그니처': { bg: '#F3E8FF', color: '#8B5CF6' },
   'BEST': { bg: '#FFEBEE', color: '#FF3B30' },
   'NEW': { bg: '#E8F5E9', color: '#4CAF50' },
