@@ -4,7 +4,7 @@ import { useAtom } from 'jotai';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import styled, { keyframes } from 'styled-components';
 import api from '../../../lib/api';
-import { formatPrice } from '../../../lib/format';
+import { formatPrice, formatItemName } from '../../../lib/format';
 import { useOrder } from '../../../hooks/useOrder';
 import { useSession } from '../../../hooks/useSession';
 import { useOrderWebSocket } from '../../../hooks/useWebSocket';
@@ -281,6 +281,7 @@ export default function CartPage() {
       items: cartItems.map((item) => ({
         product: item.productId,
         name: item.name,
+        variantName: item.variantName || '',
         price: item.price,
         quantity: item.quantity,
       })),
@@ -322,36 +323,55 @@ export default function CartPage() {
       ) : (
         <>
           <CartList>
-            {cartItems.map((item) => (
-              <CartItem key={item.productId}>
-                <TopRow>
-                  <ItemInfo>
-                    <ItemName>{item.name}</ItemName>
-                    <ItemPrice>{formatPrice(item.price * item.quantity)}</ItemPrice>
-                  </ItemInfo>
-                  <RemoveButton onClick={() => { removeFromCart(item.productId); showToast(`${item.name} 삭제`, 'delete'); }}>&times;</RemoveButton>
-                </TopRow>
-                <BottomRow>
-                  <QtyGroup>
-                    <QtyButton
-                      onClick={() =>
-                        updateQuantity({ productId: item.productId, quantity: item.quantity - 1 })
-                      }
+            {cartItems.map((item) => {
+              const displayName = formatItemName(item);
+              const variantKey = item.variantName || '';
+              return (
+                <CartItem key={`${item.productId}|${variantKey}`}>
+                  <TopRow>
+                    <ItemInfo>
+                      <ItemName>{displayName}</ItemName>
+                      <ItemPrice>{formatPrice(item.price * item.quantity)}</ItemPrice>
+                    </ItemInfo>
+                    <RemoveButton
+                      onClick={() => {
+                        removeFromCart({ productId: item.productId, variantName: variantKey });
+                        showToast(`${displayName} 삭제`, 'delete');
+                      }}
                     >
-                      −
-                    </QtyButton>
-                    <Quantity>{item.quantity}</Quantity>
-                    <QtyButton
-                      onClick={() =>
-                        updateQuantity({ productId: item.productId, quantity: item.quantity + 1 })
-                      }
-                    >
-                      +
-                    </QtyButton>
-                  </QtyGroup>
-                </BottomRow>
-              </CartItem>
-            ))}
+                      &times;
+                    </RemoveButton>
+                  </TopRow>
+                  <BottomRow>
+                    <QtyGroup>
+                      <QtyButton
+                        onClick={() =>
+                          updateQuantity({
+                            productId: item.productId,
+                            variantName: variantKey,
+                            quantity: item.quantity - 1,
+                          })
+                        }
+                      >
+                        −
+                      </QtyButton>
+                      <Quantity>{item.quantity}</Quantity>
+                      <QtyButton
+                        onClick={() =>
+                          updateQuantity({
+                            productId: item.productId,
+                            variantName: variantKey,
+                            quantity: item.quantity + 1,
+                          })
+                        }
+                      >
+                        +
+                      </QtyButton>
+                    </QtyGroup>
+                  </BottomRow>
+                </CartItem>
+              );
+            })}
           </CartList>
 
           <OrderButton onClick={handleOrder} disabled={orderMutation.isPending}>

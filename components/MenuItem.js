@@ -188,7 +188,10 @@ export default function MenuItem({ product, onAdd }) {
   const [imageOpen, setImageOpen] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const imgRef = useRef(null);
-  const isSoldOut = product.isSoldOut;
+  // variants가 있고 전부 품절이면 상품도 품절로 취급 (시트 열어도 의미 없음)
+  const variants = product.variants || [];
+  const allVariantsSoldOut = variants.length > 0 && variants.every((v) => v.isSoldOut);
+  const isSoldOut = product.isSoldOut || allVariantsSoldOut;
 
   useEffect(() => {
     setImageLoaded(false);

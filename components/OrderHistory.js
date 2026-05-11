@@ -2,7 +2,7 @@ import { useRef, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import styled, { keyframes } from 'styled-components';
 import api from '../lib/api';
-import { formatPrice } from '../lib/format';
+import { formatPrice, formatItemName } from '../lib/format';
 
 const Overlay = styled.div`
   position: fixed;
@@ -360,7 +360,7 @@ export default function OrderHistory({ open, onClose, tableId, sessionClearedAt,
                 {order.items.map((item, i) => (
                   <ItemBlock key={i}>
                     <ItemName>
-                      {item.name}
+                      {formatItemName(item)}
                       <ItemQty>× {item.quantity}</ItemQty>
                     </ItemName>
                     <ItemPrice>{formatPrice(item.price * item.quantity)}</ItemPrice>

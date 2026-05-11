@@ -26,6 +26,7 @@ import CartBar from '../../components/CartBar';
 import ExpiredScreen from '../../components/ExpiredScreen';
 import LoadingScreen from '../../components/LoadingScreen';
 import StaffCallSheet from '../../components/StaffCallSheet';
+import VariantSheet from '../../components/VariantSheet';
 import { useOrderWebSocket } from '../../hooks/useWebSocket';
 
 const PageWrapper = styled.div`
@@ -58,6 +59,7 @@ export default function TablePage() {
   const { data: callItemsData } = useCallItems();
   const callItems = callItemsData?.data || callItemsData || [];
   const [staffSheetOpen, setStaffSheetOpen] = useState(false);
+  const [variantProduct, setVariantProduct] = useState(null);
   const orderMutation = useOrder();
   const showToast = useToast();
   const queryClient = useQueryClient();
@@ -213,8 +215,19 @@ export default function TablePage() {
   };
 
   const handleAddToCart = (product) => {
-    addToCart(product);
+    if (Array.isArray(product.variants) && product.variants.length > 0) {
+      setVariantProduct(product);
+      return;
+    }
+    addToCart({ product });
     showToast(`${product.name} 추가`, 'success');
+  };
+
+  const handleVariantSelect = (variant) => {
+    if (!variantProduct) return;
+    addToCart({ product: variantProduct, variant });
+    showToast(`${variantProduct.name} (${variant.name}) 추가`, 'success');
+    setVariantProduct(null);
   };
 
   const handleCartClick = () => {
@@ -242,6 +255,7 @@ export default function TablePage() {
       items: cartItems.map((item) => ({
         product: item.productId,
         name: item.name,
+        variantName: item.variantName || '',
         price: item.price,
         quantity: item.quantity,
       })),
@@ -302,6 +316,12 @@ export default function TablePage() {
         onSubmit={handleStaffCallSubmit}
         items={callItems}
         submitting={staffCallMutation.isPending}
+      />
+      <VariantSheet
+        open={!!variantProduct}
+        product={variantProduct}
+        onClose={() => setVariantProduct(null)}
+        onSelect={handleVariantSelect}
       />
     </PageWrapper>
   );

@@ -7,6 +7,10 @@ const cartStorage = createJSONStorage(() =>
 
 export const cartItemsAtom = atomWithStorage('cart', [], cartStorage, { getOnInit: true });
 
+// 같은 상품도 변형이 다르면 별도 라인. 같은 변형이면 수량 합산.
+const sameLine = (a, b) =>
+  a.productId === b.productId && (a.variantName || '') === (b.variantName || '');
+
 export const cartCountAtom = atom((get) => {
   return get(cartItemsAtom).reduce((sum, item) => sum + item.quantity, 0);
 });
@@ -15,30 +19,54 @@ export const cartTotalAtom = atom((get) => {
   return get(cartItemsAtom).reduce((sum, item) => sum + item.price * item.quantity, 0);
 });
 
-// Helper: add item to cart
-export const addToCartAtom = atom(null, (get, set, product) => {
+// product: 일반 상품 객체. variant(선택): { name, price?, isSoldOut? } — 변형 시트에서 선택된 항목.
+export const addToCartAtom = atom(null, (get, set, payload) => {
+  const product = payload.product || payload;
+  const variant = payload.variant || null;
+  const variantName = variant?.name || '';
+  const price = variant && variant.price != null ? variant.price : product.price;
+  const line = { productId: product._id, name: product.name, variantName, price, quantity: 1 };
+
   const items = get(cartItemsAtom);
-  const existing = items.find(item => item.productId === product._id);
+  const existing = items.find((item) => sameLine(item, line));
   if (existing) {
-    set(cartItemsAtom, items.map(item =>
-      item.productId === product._id ? { ...item, quantity: item.quantity + 1 } : item
-    ));
+    set(
+      cartItemsAtom,
+      items.map((item) => (sameLine(item, line) ? { ...item, quantity: item.quantity + 1 } : item))
+    );
   } else {
-    set(cartItemsAtom, [...items, { productId: product._id, name: product.name, price: product.price, quantity: 1 }]);
+    set(cartItemsAtom, [...items, line]);
   }
 });
 
-export const removeFromCartAtom = atom(null, (get, set, productId) => {
-  set(cartItemsAtom, get(cartItemsAtom).filter(item => item.productId !== productId));
+export const removeFromCartAtom = atom(null, (get, set, key) => {
+  const productId = typeof key === 'string' ? key : key.productId;
+  const variantName = typeof key === 'string' ? '' : key.variantName || '';
+  set(
+    cartItemsAtom,
+    get(cartItemsAtom).filter(
+      (item) => !(item.productId === productId && (item.variantName || '') === variantName)
+    )
+  );
 });
 
-export const updateQuantityAtom = atom(null, (get, set, { productId, quantity }) => {
+export const updateQuantityAtom = atom(null, (get, set, { productId, variantName = '', quantity }) => {
   if (quantity <= 0) {
-    set(cartItemsAtom, get(cartItemsAtom).filter(item => item.productId !== productId));
+    set(
+      cartItemsAtom,
+      get(cartItemsAtom).filter(
+        (item) => !(item.productId === productId && (item.variantName || '') === variantName)
+      )
+    );
   } else {
-    set(cartItemsAtom, get(cartItemsAtom).map(item =>
-      item.productId === productId ? { ...item, quantity } : item
-    ));
+    set(
+      cartItemsAtom,
+      get(cartItemsAtom).map((item) =>
+        item.productId === productId && (item.variantName || '') === variantName
+          ? { ...item, quantity }
+          : item
+      )
+    );
   }
 });
 

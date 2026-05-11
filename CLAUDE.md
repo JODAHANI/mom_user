@@ -49,6 +49,7 @@ client/
 │   ├── PromoBanner.js     # 공지사항 배너 (펼침/접기)
 │   ├── OrderHistory.js    # 주문내역 바텀시트 (10초 갱신, 스와이프 닫기)
 │   ├── StaffCallSheet.js  # 직원호출 바텀시트 (호출 항목 다중선택 → POST /staff-calls)
+│   ├── VariantSheet.js    # 종류 선택 바텀시트 (variants 있는 상품 탭 시 — 단일 선택 즉시 담기)
 │   ├── LoadingScreen.js   # 로딩 화면 (점 3개 바운스, message props)
 │   ├── TableGuide.js      # QR 스캔 안내 화면 (토큰 없이 진입 시)
 │   ├── ExpiredScreen.js   # 결제 완료/세션 만료 화면 (이전 주문내역 링크)
@@ -93,6 +94,13 @@ client/
 
 ### 뱃지 종류
 추천, 사장님 추천, 인기, 시그니처, BEST, NEW, 품절
+
+### 변형 선택 (variants)
+- `product.variants[]`가 있는 상품을 탭하면 메뉴 카드 가격은 기본가 그대로 표시, 탭 시 `VariantSheet`가 올라옴
+- 시트에서 종류를 탭하면 즉시 카트에 담기고 시트 닫힘 (수량 조절·확인 버튼 없음, 백드롭 탭으로도 닫힘)
+- 동일 상품이라도 다른 변형은 카트 별도 라인 — 키는 `productId + variantName` 조합
+- 모든 변형이 품절이면 메뉴 카드에서 자동으로 "품절"로 표시 (클라 계산, DB 미변경)
+- 카트/주문내역 표기는 `lib/format.formatItemName` 헬퍼로 `상품명 (변형명)` 포맷
 
 ## 사용하는 API
 
