@@ -7,6 +7,7 @@ import api from '../../lib/api';
 import { useCategories } from '../../hooks/useCategories';
 import { useProducts } from '../../hooks/useProducts';
 import { useStaffCall } from '../../hooks/useStaffCall';
+import { useCallItems } from '../../hooks/useCallItems';
 import { useOrder } from '../../hooks/useOrder';
 import { useSession } from '../../hooks/useSession';
 import {
@@ -24,6 +25,7 @@ import MenuList from '../../components/MenuList';
 import CartBar from '../../components/CartBar';
 import ExpiredScreen from '../../components/ExpiredScreen';
 import LoadingScreen from '../../components/LoadingScreen';
+import StaffCallSheet from '../../components/StaffCallSheet';
 import { useOrderWebSocket } from '../../hooks/useWebSocket';
 
 const PageWrapper = styled.div`
@@ -53,6 +55,9 @@ export default function TablePage() {
   const [cartTotal] = useAtom(cartTotalAtom);
   const [, clearCart] = useAtom(clearCartAtom);
   const staffCallMutation = useStaffCall();
+  const { data: callItemsData } = useCallItems();
+  const callItems = callItemsData?.data || callItemsData || [];
+  const [staffSheetOpen, setStaffSheetOpen] = useState(false);
   const orderMutation = useOrder();
   const showToast = useToast();
   const queryClient = useQueryClient();
@@ -171,17 +176,32 @@ export default function TablePage() {
   const staffCallLockRef = useRef(false);
   const handleStaffCall = () => {
     if (!table?._id) return;
+    setStaffSheetOpen(true);
+  };
+
+  const handleStaffCallSubmit = (items) => {
+    if (!table?._id) return;
     if (staffCallLockRef.current) return;
     staffCallLockRef.current = true;
     setTimeout(() => {
       staffCallLockRef.current = false;
     }, 2000);
     staffCallMutation.mutate(
-      { tableId: table._id, tableNumber: table.number, floor: table.floor, sessionStartedAt },
       {
-        onSuccess: () => showToast('직원호출이\n완료되었습니다.', 'staff'),
+        tableId: table._id,
+        tableNumber: table.number,
+        floor: table.floor,
+        items,
+        sessionStartedAt,
+      },
+      {
+        onSuccess: () => {
+          setStaffSheetOpen(false);
+          showToast('직원호출이\n완료되었습니다.', 'staff');
+        },
         onError: (err) => {
           if (err?.response?.status === 409) {
+            setStaffSheetOpen(false);
             showToast('테이블이 정리되었습니다.', 'error');
             queryClient.invalidateQueries({ queryKey: ['table'] });
           } else {
@@ -276,6 +296,13 @@ export default function TablePage() {
       />
       <MenuList groups={groupedProducts} onAddToCart={handleAddToCart} />
       <CartBar count={cartCount} total={cartTotal} onClick={handleOrderSubmit} pending={orderMutation.isPending} />
+      <StaffCallSheet
+        open={staffSheetOpen}
+        onClose={() => setStaffSheetOpen(false)}
+        onSubmit={handleStaffCallSubmit}
+        items={callItems}
+        submitting={staffCallMutation.isPending}
+      />
     </PageWrapper>
   );
 }

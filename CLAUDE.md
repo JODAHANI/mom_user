@@ -48,6 +48,7 @@ client/
 │   ├── MenuList.js        # 메뉴 그리드 컨테이너
 │   ├── PromoBanner.js     # 공지사항 배너 (펼침/접기)
 │   ├── OrderHistory.js    # 주문내역 바텀시트 (10초 갱신, 스와이프 닫기)
+│   ├── StaffCallSheet.js  # 직원호출 바텀시트 (호출 항목 다중선택 → POST /staff-calls)
 │   ├── LoadingScreen.js   # 로딩 화면 (점 3개 바운스, message props)
 │   ├── TableGuide.js      # QR 스캔 안내 화면 (토큰 없이 진입 시)
 │   ├── ExpiredScreen.js   # 결제 완료/세션 만료 화면 (이전 주문내역 링크)
@@ -55,10 +56,11 @@ client/
 ├── hooks/
 │   ├── useCategories.js   # GET /categories
 │   ├── useProducts.js     # GET /products (카테고리 필터)
+│   ├── useCallItems.js    # GET /call-items (5분 staleTime, StaffCallSheet 항목)
 │   ├── useOrder.js        # POST /orders (useMutation)
-│   ├── useStaffCall.js    # POST /staff-calls (useMutation)
+│   ├── useStaffCall.js    # POST /staff-calls (useMutation, items[] 포함)
 │   ├── useSession.js      # 테이블별 세션 시작 시각 저장, lastClearedAt 비교로 만료 판정
-│   └── useWebSocket.js    # ORDER_STATUS 이벤트 수신
+│   └── useWebSocket.js    # NEW_ORDER / ORDER_STATUS / TABLE_CLEARED 수신 (해당 테이블만 React Query 무효화 + 토스트)
 ├── lib/
 │   ├── api.js             # axios 인스턴스 (동적 baseURL)
 │   └── websocket.js       # WebSocketManager (자동 재연결 3초)
@@ -99,8 +101,11 @@ client/
 | GET | /categories | 카테고리 목록 |
 | GET | /products | 상품 목록 (showOnTable 필터) |
 | GET | /notices | 공지사항 |
+| GET | /call-items | 직원호출 시트의 선택 항목 목록 |
 | GET | /tables/token/:token | 테이블 토큰 검증 |
-| POST | /orders | 주문 생성 |
-| POST | /staff-calls | 직원 호출 |
-| GET | /orders/table/:tableId | 테이블 주문내역 |
-| WS | ORDER_STATUS | 주문 상태 실시간 수신 |
+| POST | /orders | 주문 생성 (sessionStartedAt 포함, 409 시 세션 만료) |
+| POST | /staff-calls | 직원 호출 (items[] 다중선택, sessionStartedAt 포함) |
+| GET | /orders/table/:tableId | 테이블 주문내역 (?after=sessionStartedAt) |
+| WS | NEW_ORDER | 같은 테이블 새 주문 수신 → 주문내역 무효화 |
+| WS | ORDER_STATUS | 주문 상태 실시간 수신 + 토스트 |
+| WS | TABLE_CLEARED | 세션 만료 (테이블 비우기) 감지 → ExpiredScreen 전환 |

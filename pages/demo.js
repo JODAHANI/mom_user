@@ -8,6 +8,7 @@ import PromoBanner from '../components/PromoBanner';
 import CategoryTabs from '../components/CategoryTabs';
 import MenuList from '../components/MenuList';
 import CartBar from '../components/CartBar';
+import StaffCallSheet from '../components/StaffCallSheet';
 
 // 더미 데이터 (seed.js 기준)
 const CATEGORIES = [
@@ -43,16 +44,25 @@ export default function DemoPage() {
   const [cartTotal] = useAtom(cartTotalAtom);
   const [, placeOrder] = useAtom(placeOrderAtom);
   const showToast = useToast();
+  const [staffSheetOpen, setStaffSheetOpen] = useState(false);
 
   const table = { _id: 'demo', number: 1, floor: 1 };
+  const demoCallItems = [
+    { _id: 'd1', name: '물' },
+    { _id: 'd2', name: '냅킨' },
+    { _id: 'd3', name: '직원부르기' },
+  ];
 
   const products =
     selectedCategory === 'all'
       ? PRODUCTS
       : PRODUCTS.filter((p) => p.categoryId === selectedCategory);
 
-  const handleStaffCall = () => {
-    showToast('직원을 호출했습니다. 잠시만 기다려주세요.', 'success');
+  const handleStaffCall = () => setStaffSheetOpen(true);
+
+  const handleStaffCallSubmit = (items) => {
+    setStaffSheetOpen(false);
+    showToast(`호출이 접수되었습니다: ${items.join(', ')}`, 'success');
   };
 
   const handleAddToCart = (product) => {
@@ -76,6 +86,12 @@ export default function DemoPage() {
       />
       <MenuList products={products} onAddToCart={handleAddToCart} />
       <CartBar count={cartCount} total={cartTotal} onClick={handleCartClick} />
+      <StaffCallSheet
+        open={staffSheetOpen}
+        onClose={() => setStaffSheetOpen(false)}
+        onSubmit={handleStaffCallSubmit}
+        items={demoCallItems}
+      />
     </PageWrapper>
   );
 }

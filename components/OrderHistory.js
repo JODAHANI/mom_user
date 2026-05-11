@@ -40,8 +40,7 @@ const TopBar = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #fff;
-  border-bottom: 1px solid #f0e8d6;
+  background: #f5f1eb;
 `;
 
 const BackButton = styled.button`

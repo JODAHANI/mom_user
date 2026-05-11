@@ -1,6 +1,15 @@
-import { useState } from 'react';
-import styled from 'styled-components';
+import { useState, useEffect, useRef } from 'react';
+import styled, { keyframes } from 'styled-components';
 import { formatPrice } from '../lib/format';
+
+const sunlightDrift = keyframes`
+  0% {
+    transform: translate(-110%, -110%);
+  }
+  100% {
+    transform: translate(110%, 110%);
+  }
+`;
 
 const Card = styled.div`
   padding: 16px;
@@ -62,12 +71,53 @@ const Badge = styled.span`
   color: ${(props) => props.$color};
 `;
 
-const ImagePlaceholder = styled.div`
+const ImageWrap = styled.div`
+  position: relative;
   width: 120px;
   height: 120px;
-  border-radius: 16px;
-  background: #ede8e0;
   flex-shrink: 0;
+`;
+
+const Skeleton = styled.div`
+  position: absolute;
+  inset: 0;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: #ebe2cf;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      transparent 0,
+      transparent 27px,
+      rgba(122, 92, 50, 0.09) 27px,
+      rgba(122, 92, 50, 0.09) 28px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      transparent 0,
+      transparent 27px,
+      rgba(122, 92, 50, 0.09) 27px,
+      rgba(122, 92, 50, 0.09) 28px
+    );
+  opacity: ${(p) => (p.$loaded ? 0 : 1)};
+  transition: opacity 0.45s ease;
+  pointer-events: none;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      135deg,
+      transparent 35%,
+      rgba(245, 222, 175, 0.6) 50%,
+      transparent 65%
+    );
+    animation: ${sunlightDrift} 2.6s ease-in-out infinite;
+  }
 `;
 
 const ProductImage = styled.img`
@@ -75,9 +125,11 @@ const ProductImage = styled.img`
   height: 120px;
   border-radius: 16px;
   object-fit: contain;
-  flex-shrink: 0;
   padding: 4px;
   cursor: zoom-in;
+  display: block;
+  opacity: ${(p) => (p.$loaded ? 1 : 0)};
+  transition: opacity 0.45s ease;
 `;
 
 const ImageOverlay = styled.div`
@@ -134,7 +186,17 @@ const badgeStyles = {
 export default function MenuItem({ product, onAdd }) {
   const [pressed, setPressed] = useState(false);
   const [imageOpen, setImageOpen] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const imgRef = useRef(null);
   const isSoldOut = product.isSoldOut;
+
+  useEffect(() => {
+    setImageLoaded(false);
+    const img = imgRef.current;
+    if (img && img.complete && img.naturalWidth > 0) {
+      setImageLoaded(true);
+    }
+  }, [product.image]);
 
   const handleClick = () => {
     if (isSoldOut) return;
@@ -171,7 +233,17 @@ export default function MenuItem({ product, onAdd }) {
           <Price>{formatPrice(product.price)}</Price>
         </LeftSide>
         {product.image && (
-          <ProductImage src={product.image} alt={product.name} onClick={handleImageClick} />
+          <ImageWrap>
+            <Skeleton $loaded={imageLoaded} aria-hidden="true" />
+            <ProductImage
+              ref={imgRef}
+              src={product.image}
+              alt={product.name}
+              onClick={handleImageClick}
+              onLoad={() => setImageLoaded(true)}
+              $loaded={imageLoaded}
+            />
+          </ImageWrap>
         )}
       </Card>
       {imageOpen && (
