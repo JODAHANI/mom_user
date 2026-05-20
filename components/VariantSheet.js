@@ -1,3 +1,4 @@
+import { useRef, useCallback } from 'react';
 import styled from 'styled-components';
 import { formatPrice } from '../lib/format';
 
@@ -5,11 +6,10 @@ const Overlay = styled.div`
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(2px);
   z-index: 250;
   opacity: ${(p) => (p.$open ? 1 : 0)};
   pointer-events: ${(p) => (p.$open ? 'auto' : 'none')};
-  transition: opacity 0.22s ease;
+  transition: opacity 0.2s ease;
 `;
 
 const Sheet = styled.div`
@@ -19,13 +19,18 @@ const Sheet = styled.div`
   bottom: 0;
   max-width: 480px;
   margin: 0 auto;
-  background: #f5f1eb;
-  border-radius: 22px 22px 0 0;
+  background: #fff;
+  border-radius: 20px 20px 0 0;
   z-index: 251;
-  padding: 12px 18px calc(env(safe-area-inset-bottom, 0px) + 22px);
+  padding: 14px 20px calc(env(safe-area-inset-bottom, 0px) + 22px);
   transform: ${(p) => (p.$open ? 'translateY(0)' : 'translateY(100%)')};
-  transition: transform 0.3s cubic-bezier(0.32, 0.72, 0, 1);
-  box-shadow: 0 -12px 32px rgba(26, 21, 16, 0.18);
+  transition: transform 0.28s ease;
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.15);
+`;
+
+const DragHandle = styled.div`
+  touch-action: none;
+  user-select: none;
 `;
 
 const Grabber = styled.div`
@@ -36,30 +41,18 @@ const Grabber = styled.div`
   margin: 0 auto 14px;
 `;
 
-const HeaderRow = styled.div`
-  margin: 6px 4px 18px;
-`;
-
-const Eyebrow = styled.div`
-  font-size: 13px;
-  font-weight: 600;
-  color: #c3904a;
-  letter-spacing: 0.2px;
-  margin-bottom: 4px;
-`;
-
 const Title = styled.h2`
   font-size: 22px;
   font-weight: 800;
   color: #1a1510;
-  letter-spacing: -0.4px;
-  line-height: 1.25;
+  letter-spacing: -0.3px;
+  margin: 4px 0 22px;
 `;
 
-const List = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
+const Grid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
   max-height: 60vh;
   overflow-y: auto;
   padding: 2px;
@@ -67,74 +60,50 @@ const List = styled.div`
   &::-webkit-scrollbar { display: none; }
 `;
 
-const Row = styled.button`
+const Chip = styled.button`
+  height: 96px;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 16px 16px 16px 18px;
-  border-radius: 14px;
-  background: ${(p) => (p.$soldOut ? '#ebe3d0' : '#FBF8F1')};
-  border: 1px solid ${(p) => (p.$soldOut ? '#cdc1a7' : '#d8cdb8')};
-  text-align: left;
+  justify-content: center;
+  gap: 6px;
+  border-radius: 12px;
+  background: ${(p) => (p.$soldOut ? '#ebe3d0' : '#f4f0e7')};
+  border: 1.5px solid transparent;
+  color: ${(p) => (p.$soldOut ? '#a89e90' : '#1a1510')};
+  letter-spacing: -0.3px;
   cursor: ${(p) => (p.$soldOut ? 'not-allowed' : 'pointer')};
   pointer-events: ${(p) => (p.$soldOut ? 'none' : 'auto')};
-  box-shadow: ${(p) => (p.$soldOut ? 'none' : '0 1px 0 rgba(195, 144, 74, 0.06)')};
+  padding: 8px 6px;
   transition: background 0.15s ease, border-color 0.15s ease, transform 0.05s ease;
 
   &:active {
-    background: #fff5e0;
-    border-color: #c3904a;
-    transform: scale(0.985);
+    background: #fff5d8;
+    border-color: #f5c518;
+    transform: scale(0.97);
   }
 `;
 
-const NameBlock = styled.div`
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-`;
-
 const Name = styled.span`
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 700;
-  color: ${(p) => (p.$soldOut ? '#a89e90' : '#1a1510')};
-  letter-spacing: -0.2px;
+  text-align: center;
+  word-break: keep-all;
   text-decoration: ${(p) => (p.$soldOut ? 'line-through' : 'none')};
 `;
 
 const Price = styled.span`
-  font-size: 15px;
-  font-weight: 600;
-  color: ${(p) => (p.$soldOut ? '#bdb4a4' : '#8c7458')};
+  font-size: 13px;
+  font-weight: 700;
+  color: #8c7458;
   font-variant-numeric: tabular-nums;
 `;
 
-const RightSide = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-`;
-
-const SoldOutPill = styled.span`
+const SoldOutTag = styled.span`
   font-size: 12px;
   font-weight: 700;
   color: #8c8278;
-  background: #f5f1eb;
-  border: 1px solid #d8cdb8;
-  border-radius: 999px;
-  padding: 3px 10px;
   letter-spacing: 0.2px;
-`;
-
-const Chevron = styled.span`
-  font-size: 20px;
-  line-height: 1;
-  color: #c3904a;
-  font-weight: 400;
 `;
 
 const Empty = styled.div`
@@ -148,39 +117,59 @@ export default function VariantSheet({ open, product, onClose, onSelect }) {
   const variants = product?.variants || [];
   const basePrice = product?.price || 0;
 
+  const touchStartY = useRef(null);
+
+  const handleTouchStart = useCallback((e) => {
+    touchStartY.current = e.touches[0].clientY;
+  }, []);
+
+  const handleTouchEnd = useCallback((e) => {
+    if (touchStartY.current === null) return;
+    const diff = e.changedTouches[0].clientY - touchStartY.current;
+    if (diff > 80) {
+      onClose();
+    }
+    touchStartY.current = null;
+  }, [onClose]);
+
   return (
     <>
       <Overlay $open={open} onClick={onClose} />
       <Sheet $open={open} role="dialog" aria-modal="true">
-        <Grabber />
-        <HeaderRow>
-          <Eyebrow>종류 선택</Eyebrow>
+        <DragHandle onTouchStart={handleTouchStart} onTouchEnd={handleTouchEnd}>
+          <Grabber />
           <Title>{product?.name || ''}</Title>
-        </HeaderRow>
+        </DragHandle>
 
         {variants.length === 0 ? (
           <Empty>등록된 종류가 없습니다</Empty>
         ) : (
-          <List>
+          <Grid>
             {variants.map((v) => {
               const price = v.price != null ? v.price : basePrice;
+              const diff = price - basePrice;
+              const diffLabel =
+                diff > 0
+                  ? `+${formatPrice(diff)}`
+                  : diff < 0
+                  ? `-${formatPrice(Math.abs(diff))}`
+                  : '';
               return (
-                <Row
+                <Chip
                   key={v._id || v.name}
                   $soldOut={v.isSoldOut}
                   onClick={() => !v.isSoldOut && onSelect(v)}
                 >
-                  <NameBlock>
-                    <Name $soldOut={v.isSoldOut}>{v.name}</Name>
-                    <Price $soldOut={v.isSoldOut}>{formatPrice(price)}</Price>
-                  </NameBlock>
-                  <RightSide>
-                    {v.isSoldOut ? <SoldOutPill>품절</SoldOutPill> : <Chevron>›</Chevron>}
-                  </RightSide>
-                </Row>
+                  <Name $soldOut={v.isSoldOut}>{v.name}</Name>
+                  {v.isSoldOut ? (
+                    <SoldOutTag>품절</SoldOutTag>
+                  ) : diffLabel ? (
+                    <Price>{diffLabel}</Price>
+                  ) : null}
+                </Chip>
               );
             })}
-          </List>
+          </Grid>
         )}
       </Sheet>
     </>
